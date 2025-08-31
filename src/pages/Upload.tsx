@@ -34,11 +34,8 @@ const Upload = () => {
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const files = Array.from(e.dataTransfer.files).filter(
-        file =>
-          file.name.endsWith('.csv') ||
-          file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-          file.type === 'application/vnd.ms-excel'
+      const files = Array.from(e.dataTransfer.files).filter(file =>
+        file.name.toLowerCase().endsWith('.csv')
       );
 
       if (files.length > 0) {
@@ -50,7 +47,7 @@ const Upload = () => {
       } else {
         toast({
           title: 'فرمت نامعتبر',
-          description: 'لطفا فقط فایل‌های معتبر آپلود کنید',
+          description: 'فقط فایل‌های CSV پشتیبانی می‌شوند',
           variant: 'destructive',
         });
       }
@@ -59,11 +56,8 @@ const Upload = () => {
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files).filter(
-        file =>
-          file.name.endsWith('.csv') ||
-          file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-          file.type === 'application/vnd.ms-excel'
+      const files = Array.from(e.target.files).filter(file =>
+        file.name.toLowerCase().endsWith('.csv')
       );
 
       if (files.length > 0) {
@@ -81,17 +75,28 @@ const Upload = () => {
   };
 
   const parseCSV = (text: string) => {
-    const [headerLine, ...lines] = text.trim().split(/\r?\n/);
-    const headers = headerLine.split(',');
-    return lines.filter(l => l.trim()).map(line => {
-      const values = line.split(',');
-      const record: Record<string, string> = {};
-      headers.forEach((h, i) => {
-        record[h.trim()] = values[i]?.trim() ?? '';
+    const lines = text.trim().split(/\r?\n/);
+    const headerLine = lines.shift() ?? '';
+    const delimiter = headerLine.includes(';')
+      ? ';'
+      : headerLine.includes('\t')
+        ? '\t'
+        : ',';
+    const headers = headerLine.split(delimiter);
+    return lines
+      .filter(l => l.trim())
+      .map(line => {
+        const values = line.split(delimiter);
+        const record: Record<string, string> = {};
+        headers.forEach((h, i) => {
+          record[h] = values[i] ?? '';
+        });
+        return record;
       });
-      return record;
-    });
   };
+
+  const normalize = (str: string) =>
+    str.replace(/\uFEFF/g, '').trim().toLowerCase();
 
   const processFiles = async () => {
     if (uploadedFiles.length === 0) {
@@ -107,23 +112,39 @@ const Upload = () => {
     const existingPersonnel = JSON.parse(localStorage.getItem('personnelData') || '[]');
 
     for (const file of uploadedFiles) {
-      const text = await file.text();
-      const records = parseCSV(text);
-      if (records.length === 0) continue;
-      const headers = Object.keys(records[0]);
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        toast({
+          title: 'خطا',
+          description: `${file.name} فرمت مناسبی ندارد (فقط CSV)`,
+          variant: 'destructive',
+        });
+        continue;
+      }
 
-      if (headers.includes('Job_Title_id')) {
-        const mapped = records.map(r => ({
-          jobTitleId: r['Job_Title_id'],
-          jobTitle: r['Job_Title'],
-          departmentName: r['Department_Name'],
-          departmentId: r['Department_id'],
-          requiredCourse: r['Required_Course'],
-          requiredCourseId: r['Required_Course_id'],
+      const text = await file.text();
+      const parsed = parseCSV(text).map(record => {
+        const normalizedRecord: Record<string, string> = {};
+        Object.entries(record).forEach(([k, v]) => {
+          normalizedRecord[normalize(k)] = v.trim();
+        });
+        return normalizedRecord;
+      });
+
+      if (parsed.length === 0) continue;
+      const headers = Object.keys(parsed[0]);
+
+      if (headers.includes('job_title_id')) {
+        const mapped = parsed.map(r => ({
+          jobTitleId: r['job_title_id'],
+          jobTitle: r['job_title'],
+          departmentName: r['department_name'],
+          departmentId: r['department_id'],
+          requiredCourse: r['required_course'],
+          requiredCourseId: r['required_course_id'],
         }));
         existingCourses.push(...mapped);
       } else if (headers.includes('کد پرسنلی')) {
-        const mapped = records.map(r => ({
+        const mapped = parsed.map(r => ({
           personnelCode: r['کد پرسنلی'],
           status: r['وضعیت'],
           firstName: r['نام'],
@@ -173,7 +194,7 @@ const Upload = () => {
           آپلود فایل‌های آموزشی
         </h1>
         <p className="text-muted-foreground mt-2">
-          آپلود اطلاعات پرسنل و دوره‌های آموزشی از طریق فایل‌های اکسل
+          آپلود اطلاعات پرسنل و دوره‌های آموزشی از طریق فایل‌های CSV استخراج شده از اکسل
         </p>
       </div>
 
@@ -243,12 +264,12 @@ const Upload = () => {
             onDrop={handleDrop}
           >
             <UploadIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">فایل‌های اکسل را اینجا بکشید یا کلیک کنید</h3>
-            <p className="text-muted-foreground mb-4">فرمت‌های پشتیبانی شده: .csv, .xlsx, .xls</p>
+            <h3 className="text-lg font-medium mb-2">فایل‌های CSV را اینجا بکشید یا کلیک کنید</h3>
+            <p className="text-muted-foreground mb-4">فرمت پشتیبانی شده: .csv</p>
             <input
               type="file"
               multiple
-              accept=".csv,.xlsx,.xls"
+              accept=".csv"
               onChange={handleFileInput}
               className="hidden"
               id="file-input"
