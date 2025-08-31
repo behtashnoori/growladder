@@ -26,11 +26,13 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					glow: 'hsl(var(--secondary-glow))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -51,6 +53,32 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				// Gamification colors
+				achievement: {
+					DEFAULT: 'hsl(var(--achievement))',
+					foreground: 'hsl(var(--achievement-foreground))'
+				},
+				progress: {
+					DEFAULT: 'hsl(var(--progress))',
+					background: 'hsl(var(--progress-background))'
+				},
+				level: {
+					DEFAULT: 'hsl(var(--level))',
+					foreground: 'hsl(var(--level-foreground))'
+				},
+				// Status colors
+				completed: {
+					DEFAULT: 'hsl(var(--completed))',
+					foreground: 'hsl(var(--completed-foreground))'
+				},
+				'in-progress': {
+					DEFAULT: 'hsl(var(--in-progress))',
+					foreground: 'hsl(var(--in-progress-foreground))'
+				},
+				pending: {
+					DEFAULT: 'hsl(var(--pending))',
+					foreground: 'hsl(var(--pending-foreground))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
