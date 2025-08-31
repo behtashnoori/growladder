@@ -104,9 +104,22 @@ const Upload = () => {
   };
 
   const downloadTemplate = (type: 'personnel' | 'courses') => {
+    const fileName =
+      type === 'personnel'
+        ? 'personnel_template.csv'
+        : 'courses_template.csv';
+    const link = document.createElement('a');
+    link.href = `/templates/${fileName}`;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     toast({
       title: "دانلود تمپلیت",
-      description: `تمپلیت ${type === 'personnel' ? 'پرسنل' : 'دوره‌ها'} در حال دانلود...`,
+      description: `تمپلیت ${
+        type === 'personnel' ? 'پرسنل' : 'دوره‌ها'
+      } دانلود شد`,
     });
   };
 
