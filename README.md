@@ -71,3 +71,7 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Local Data Mode (IndexedDB)
+
+این پروژه داده‌ها را به‌صورت محلی در مرورگر با استفاده از IndexedDB و کتابخانه Dexie ذخیره می‌کند. از صفحه «آپلود» می‌توانید فایل‌های CSV یا XLSX شامل دوره‌ها را بارگذاری کنید، پیش‌نمایش تغییرات را ببینید و سپس آن‌ها را به پایگاه‌دادهٔ محلی متعهد کنید. صفحهٔ «دوره‌ها» بلافاصله پس از commit داده‌های جدید را نمایش می‌دهد و از بخش «خروجی همه» می‌توانید اطلاعات موجود را به‌صورت فایل Excel یا CSV دریافت کنید. برای پاک‌سازی کامل داده‌های محلی، از دکمهٔ «حذف داده‌ها» استفاده کنید.
