@@ -186,3 +186,12 @@ export async function bulkUpsertJobCourseReq(items: JobCourseReq[]): Promise<voi
   });
 }
 
+export async function bulkUpsertMasters(
+  table: Table<Master, string>,
+  items: Master[]
+): Promise<void> {
+  await db.transaction("rw", table, async () => {
+    await chunkedBulkPut(table, items);
+  });
+}
+

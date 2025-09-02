@@ -26,6 +26,11 @@ const Navigation = () => {
     { path: '/personnel/upload', icon: Upload, label: 'آپلود پرسنل', color: 'text-achievement' },
     { path: '/profiles', icon: User, label: 'پرونده آموزشی', color: 'text-level' },
     { path: '/upload', icon: Upload, label: 'آپلود دوره', color: 'text-secondary' },
+    { path: '/upload/decrees', icon: Upload, label: 'آپلود احکام کارگزینی', color: 'text-secondary' },
+    { path: '/upload/posts', icon: Upload, label: 'آپلود پست‌ها', color: 'text-secondary' },
+    { path: '/upload/sections', icon: Upload, label: 'آپلود بخش‌ها', color: 'text-secondary' },
+    { path: '/upload/departments', icon: Upload, label: 'آپلود اداره‌ها', color: 'text-secondary' },
+    { path: '/upload/managements', icon: Upload, label: 'آپلود مدیریت‌ها', color: 'text-secondary' },
     { path: '/jobs', icon: Briefcase, label: 'شغل‌ها', color: 'text-secondary' },
     { path: '/job-course-upload', icon: FileUp, label: 'آپلود شغل-دوره', color: 'text-accent' },
   ];

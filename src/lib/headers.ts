@@ -13,6 +13,11 @@ export const PERSONNEL_HEADERS: AliasMap = {
   name: ["name", "نام", "نام و نام خانوادگی"],
 };
 
+export const MASTER_HEADERS: AliasMap = {
+  code: COMMON.code,
+  title: COMMON.title,
+};
+
 export function mergeAliases(...maps: AliasMap[]): Record<string, string[]> {
   return Object.assign({}, ...maps);
 }

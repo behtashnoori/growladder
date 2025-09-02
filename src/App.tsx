@@ -15,6 +15,11 @@ import NotFound from "./pages/NotFound";
 import JobsPage from "./pages/JobsPage";
 import JobDetailPage from "./pages/JobDetailPage";
 import JobCourseUploadPage from "./pages/JobCourseUploadPage";
+import DecreesUploadPage from "./pages/masters/DecreesUploadPage";
+import PostsUploadPage from "./pages/masters/PostsUploadPage";
+import SectionsUploadPage from "./pages/masters/SectionsUploadPage";
+import DepartmentsUploadPage from "./pages/masters/DepartmentsUploadPage";
+import ManagementsUploadPage from "./pages/masters/ManagementsUploadPage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +37,11 @@ const App = () => (
           <Route path="/personnel/:emp_code" element={<Layout><PersonDetailPage /></Layout>} />
           <Route path="/profiles" element={<Layout><TrainingProfiles /></Layout>} />
           <Route path="/upload" element={<Layout><UploadPage /></Layout>} />
+          <Route path="/upload/decrees" element={<Layout><DecreesUploadPage /></Layout>} />
+          <Route path="/upload/posts" element={<Layout><PostsUploadPage /></Layout>} />
+          <Route path="/upload/sections" element={<Layout><SectionsUploadPage /></Layout>} />
+          <Route path="/upload/departments" element={<Layout><DepartmentsUploadPage /></Layout>} />
+          <Route path="/upload/managements" element={<Layout><ManagementsUploadPage /></Layout>} />
           <Route path="/jobs" element={<Layout><JobsPage /></Layout>} />
           <Route path="/jobs/:id" element={<Layout><JobDetailPage /></Layout>} />
           <Route path="/job-course-upload" element={<Layout><JobCourseUploadPage /></Layout>} />
