@@ -15,6 +15,16 @@ export interface Personnel {
   job_title?: string;
   department_id?: string;
   department_name?: string;
+  decree_code?: string;
+  decree_title?: string;
+  post_code?: string;
+  post_title?: string;
+  section_code?: string;
+  section_title?: string;
+  department_code?: string;
+  department_title?: string;
+  management_code?: string;
+  management_title?: string;
   updatedAt: number;
   createdAt: number;
 }
@@ -50,6 +60,14 @@ export interface JobCourseReq {
   createdAt: number;
 }
 
+export interface Master {
+  code: string;
+  title: string;
+  note?: string;
+  updatedAt: number;
+  createdAt: number;
+}
+
 class GrowLadderDB extends Dexie {
   public courses!: Table<Course, string>;
   public personnel!: Table<Personnel, string>;
@@ -57,6 +75,11 @@ class GrowLadderDB extends Dexie {
   public personCourse!: Table<PersonCourse, [string, string]>;
   public jobs!: Table<Job, string>;
   public jobCourseReq!: Table<JobCourseReq, [string, string]>;
+  public decrees!: Table<Master, string>;
+  public posts!: Table<Master, string>;
+  public sections!: Table<Master, string>;
+  public departments!: Table<Master, string>;
+  public managements!: Table<Master, string>;
 
   public constructor() {
     super("growladder");
@@ -83,6 +106,21 @@ class GrowLadderDB extends Dexie {
           rec.job_title_id = rec.job_code;
           delete rec.job_code;
         });
+      });
+
+    this.version(4)
+      .stores({
+        personnel:
+          "&emp_code, name, job_title_id, job_title, department_id, department_name, decree_code, decree_title, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
+        decrees: "&code, title, note, updatedAt, createdAt",
+        posts: "&code, title, updatedAt, createdAt",
+        sections: "&code, title, updatedAt, createdAt",
+        departments: "&code, title, updatedAt, createdAt",
+        managements: "&code, title, updatedAt, createdAt",
+      })
+      .upgrade((tx) => {
+        const tbl = tx.table<Personnel, string>("personnel");
+        return tbl.toCollection().modify(() => {});
       });
   }
 }

@@ -10,30 +10,8 @@ import PersonnelUploadPreviewDialog, {
 import { readRows } from "@/lib/xlsx";
 import { PersonnelRow, rowToPersonnel, PersonnelRowType } from "@/schemas/personnel";
 import { db, bulkUpsertPersonnel, Personnel } from "@/db";
+import { normalizeRow, PERSONNEL_HEADERS } from "@/lib/headers";
 import { useToast } from "@/components/ui/use-toast";
-
-const headerMap: Record<string, keyof PersonnelRowType> = {
-  emp_code: "emp_code",
-  "کد پرسنلی": "emp_code",
-  "کدپرسنلی": "emp_code",
-  PersonnelCode: "emp_code",
-  name: "name",
-  "نام": "name",
-  "نام و نام خانوادگی": "name",
-  Job_Title_id: "job_title_id",
-  job_title_id: "job_title_id",
-  "کد عنوان شغلی": "job_title_id",
-  Job_Title: "job_title",
-  job_title: "job_title",
-  "عنوان شغلی": "job_title",
-  Department_id: "department_id",
-  dept_id: "department_id",
-  "کد دپارتمان": "department_id",
-  Department_Name: "department_name",
-  dept_name: "department_name",
-  "نام دپارتمان": "department_name",
-  "گروه": "department_name",
-};
 
 const PersonnelUploadPage = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -54,41 +32,28 @@ const PersonnelUploadPage = () => {
     const toUpdate: Personnel[] = [];
     const errors: PreviewStats["errors"] = [];
 
-    for (const raw of rows) {
-      const normalized: Record<string, string> = {};
-      for (const [k, v] of Object.entries(raw)) {
-        const key = headerMap[k.trim()];
-        if (key) normalized[key] = v;
-      }
-      if (Object.values(normalized).every((v) => !v.trim())) continue;
+    rows.forEach((raw, idx) => {
+      const normalized = normalizeRow(raw, PERSONNEL_HEADERS);
+      if (Object.values(normalized).every((v) => !v)) return;
       const obj: PersonnelRowType = {
-        emp_code: (normalized.emp_code ?? "").trim(),
-        name: (normalized.name ?? "").trim(),
-        job_title_id: normalized.job_title_id?.trim(),
-        job_title: normalized.job_title?.trim(),
-        department_id: normalized.department_id?.trim(),
-        department_name: normalized.department_name?.trim(),
+        emp_code: normalized.emp_code ?? "",
+        name: normalized.name ?? "",
       };
       const parsed = PersonnelRow.safeParse(obj);
       if (!parsed.success) {
-        errors.push({ row: raw, message: parsed.error.issues[0]?.message ?? "" });
-        continue;
+        errors.push({ row: raw, message: parsed.error.issues[0]?.message ?? "", rowNum: idx + 2 });
+        return;
       }
       const person = rowToPersonnel(parsed.data);
       const current = existing.get(person.emp_code);
       if (!current) {
         toInsert.push(person);
-      } else if (
-        current.name !== person.name ||
-        current.job_title_id !== person.job_title_id ||
-        current.job_title !== person.job_title ||
-        current.department_id !== person.department_id ||
-        current.department_name !== person.department_name
-      ) {
+      } else if (current.name !== person.name) {
         person.createdAt = current.createdAt;
         toUpdate.push(person);
       }
-    }
+    });
+
     setPreview({ toInsert, toUpdate, errors });
     setDialogOpen(true);
     setLoading(false);

@@ -1,39 +1,20 @@
 import { z } from "zod";
 import { Personnel } from "@/db";
+import { toStr, normalizeText } from "@/lib/normalize";
 
 export const PersonnelRow = z.object({
-  emp_code: z.string().min(1),
-  name: z.string().min(1),
-  job_title_id: z.string().optional(),
-  job_title: z.string().optional(),
-  department_id: z.string().optional(),
-  department_name: z.string().optional(),
+  emp_code: z.preprocess(toStr, z.string().min(1, "کد پرسنلی خالی است")),
+  name: z.preprocess(toStr, z.string().min(1, "نام خالی است")),
 });
 
 export type PersonnelRowType = z.infer<typeof PersonnelRow>;
 
-function canonicalize(s: string): string {
-  return s
-    .replace(/\u200c/g, "")
-    .replace(/ي/g, "ی")
-    .replace(/ك/g, "ک")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 export function rowToPersonnel(r: PersonnelRowType): Personnel {
   const now = Date.now();
   return {
-    emp_code: r.emp_code,
-    name: canonicalize(r.name),
-    job_title_id: r.job_title_id,
-    job_title: r.job_title ? canonicalize(r.job_title) : undefined,
-    department_id: r.department_id,
-    department_name: r.department_name
-      ? canonicalize(r.department_name)
-      : undefined,
-    createdAt: now,
+    emp_code: normalizeText(r.emp_code),
+    name: normalizeText(r.name),
     updatedAt: now,
-  };
+    createdAt: now,
+  } as Personnel;
 }
-

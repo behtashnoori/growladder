@@ -30,6 +30,7 @@ import type { Personnel } from "@/db";
 interface ErrorItem {
   row: Record<string, string>;
   message: string;
+  rowNum: number;
 }
 
 export interface PreviewStats {
@@ -155,6 +156,7 @@ const PersonnelUploadPreviewDialog = ({
             <>
               {"message" in r && (
                 <>
+                  <TableCell>{r.rowNum}</TableCell>
                   <TableCell>{r.row.emp_code}</TableCell>
                   <TableCell className="text-red-600">{r.message}</TableCell>
                 </>
