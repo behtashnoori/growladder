@@ -23,8 +23,9 @@ const Navigation = () => {
     { path: '/', icon: BarChart3, label: 'داشبورد', color: 'text-primary' },
     { path: '/courses', icon: BookOpen, label: 'دوره‌های آموزش', color: 'text-secondary' },
     { path: '/personnel', icon: Users, label: 'لیست پرسنل', color: 'text-accent' },
+    { path: '/personnel/upload', icon: Upload, label: 'آپلود پرسنل', color: 'text-achievement' },
     { path: '/profiles', icon: User, label: 'پرونده آموزشی', color: 'text-level' },
-    { path: '/upload', icon: Upload, label: 'آپلود فایل', color: 'text-achievement' },
+    { path: '/upload', icon: Upload, label: 'آپلود دوره', color: 'text-secondary' },
     { path: '/jobs', icon: Briefcase, label: 'شغل‌ها', color: 'text-secondary' },
     { path: '/job-course-upload', icon: FileUp, label: 'آپلود شغل-دوره', color: 'text-accent' },
   ];

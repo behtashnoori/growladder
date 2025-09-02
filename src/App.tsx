@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/CoursesPage";
-import Personnel from "./pages/Personnel";
+import PersonnelPage from "./pages/PersonnelPage";
+import PersonnelUploadPage from "./pages/PersonnelUploadPage";
+import PersonDetailPage from "./pages/PersonDetailPage";
 import TrainingProfiles from "./pages/TrainingProfiles";
 import UploadPage from "./pages/UploadPage";
 import NotFound from "./pages/NotFound";
@@ -25,7 +27,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Layout><Dashboard /></Layout>} />
           <Route path="/courses" element={<Layout><CoursesPage /></Layout>} />
-          <Route path="/personnel" element={<Layout><Personnel /></Layout>} />
+          <Route path="/personnel" element={<Layout><PersonnelPage /></Layout>} />
+          <Route path="/personnel/upload" element={<Layout><PersonnelUploadPage /></Layout>} />
+          <Route path="/personnel/:emp_code" element={<Layout><PersonDetailPage /></Layout>} />
           <Route path="/profiles" element={<Layout><TrainingProfiles /></Layout>} />
           <Route path="/upload" element={<Layout><UploadPage /></Layout>} />
           <Route path="/jobs" element={<Layout><JobsPage /></Layout>} />

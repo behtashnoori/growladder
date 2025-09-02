@@ -30,6 +30,34 @@ export function downloadTemplateCourses(type: "xlsx" | "csv") {
   }
 }
 
+export function downloadTemplatePersonnel(type: "xlsx" | "csv") {
+  const rows = [
+    {
+      emp_code: "EMP001",
+      name: "نمونه پرسنل اول",
+      job_title_id: "JO1",
+      job_title: "عنوان شغلی",
+      department_id: "DP1",
+      department_name: "دپارتمان",
+    },
+  ];
+  const ws = utils.json_to_sheet(rows);
+  if (type === "xlsx") {
+    const wb: WorkBook = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Personnel");
+    writeFile(wb, "personnel_template.xlsx");
+  } else {
+    const csv = utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "personnel_template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
 export function exportRows(
   rows: Record<string, string | number | undefined>[],
   filename: string,

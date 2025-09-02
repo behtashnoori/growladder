@@ -11,7 +11,10 @@ export interface Course {
 export interface Personnel {
   emp_code: string;
   name: string;
-  job_code?: string;
+  job_title_id?: string;
+  job_title?: string;
+  department_id?: string;
+  department_name?: string;
   updatedAt: number;
   createdAt: number;
 }
@@ -19,6 +22,15 @@ export interface Personnel {
 export interface CoursePersonnel {
   emp_code: string;
   course_code: string;
+  createdAt: number;
+}
+
+export interface PersonCourse {
+  emp_code: string;
+  course_code: string;
+  status?: "passed" | "in_progress" | "failed";
+  score?: number;
+  date?: string;
   createdAt: number;
 }
 
@@ -42,6 +54,7 @@ class GrowLadderDB extends Dexie {
   public courses!: Table<Course, string>;
   public personnel!: Table<Personnel, string>;
   public coursePersonnel!: Table<CoursePersonnel, [string, string]>;
+  public personCourse!: Table<PersonCourse, [string, string]>;
   public jobs!: Table<Job, string>;
   public jobCourseReq!: Table<JobCourseReq, [string, string]>;
 
@@ -56,6 +69,21 @@ class GrowLadderDB extends Dexie {
       jobs: "&job_title_id, job_title, department_name, department_id, updatedAt, createdAt",
       jobCourseReq: "[job_title_id+course_code], job_title_id, course_code, required, createdAt",
     });
+    this.version(3)
+      .stores({
+        personnel:
+          "&emp_code, name, job_title_id, job_title, department_id, department_name, updatedAt, createdAt",
+        personCourse:
+          "[emp_code+course_code], emp_code, course_code, status, score, date, createdAt",
+      })
+      .upgrade(async (tx) => {
+        const tbl = tx.table<Personnel, string>("personnel");
+        await tbl.toCollection().modify((p) => {
+          const rec = p as unknown as { job_code?: string; job_title_id?: string };
+          rec.job_title_id = rec.job_code;
+          delete rec.job_code;
+        });
+      });
   }
 }
 
@@ -70,6 +98,25 @@ export async function bulkUpsertCourses(items: Course[]): Promise<void> {
   await db.transaction("rw", db.courses, async () => {
     await db.courses.bulkPut(items);
   });
+}
+
+export async function getPersonnel(
+  recentSince?: number
+): Promise<Personnel[]> {
+  const items = await db.personnel.toArray();
+  return recentSince ? items.filter((p) => p.createdAt >= recentSince) : items;
+}
+
+export async function bulkUpsertPersonnel(items: Personnel[]): Promise<void> {
+  await db.transaction("rw", db.personnel, async () => {
+    await chunkedBulkPut(db.personnel, items);
+  });
+}
+
+export async function getPersonCourses(
+  emp_code: string
+): Promise<PersonCourse[]> {
+  return db.personCourse.where({ emp_code }).toArray();
 }
 
 export async function getJobs(recentSince?: number): Promise<Job[]> {
