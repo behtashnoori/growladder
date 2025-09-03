@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 import { db, getPersonCourses } from "@/db";
 import { exportRows } from "@/lib/xlsx";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import AddCourseDialog from "@/components/AddCourseDialog";
 
 const PersonDetailPage = () => {
   const { emp_code } = useParams();
@@ -36,6 +37,8 @@ const PersonDetailPage = () => {
   });
   const [filter, setFilter] = useState<"all" | "needed" | "passed">("all");
   const [search, setSearch] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   if (personQuery.isLoading) return <div className="p-4">در حال بارگذاری...</div>;
   const person = personQuery.data;
@@ -133,7 +136,13 @@ const PersonDetailPage = () => {
           ))}
         </TableBody>
       </Table>
-      <Button disabled>ثبت گذراندن دوره</Button>
+      <Button onClick={() => setAddOpen(true)}>ثبت گذراندن دوره</Button>
+      <AddCourseDialog
+        emp_code={person.emp_code}
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ["personCourse", emp_code] })}
+      />
     </div>
   );
 };

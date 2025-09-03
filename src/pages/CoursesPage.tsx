@@ -30,7 +30,7 @@ const CoursesPage = () => {
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <Button onClick={() => navigate("/upload")}>آپلود</Button>
+          <Button onClick={() => navigate("/uploads/courses")}>آپلود</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">دانلود تمپلیت</Button>

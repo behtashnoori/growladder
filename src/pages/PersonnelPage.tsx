@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { exportRows, downloadTemplatePersonnel } from "@/lib/xlsx";
 import { getPersonnel, Personnel, db } from "@/db";
 import { useState, useMemo } from "react";
+import AssignOrgDialog from "@/components/AssignOrgDialog";
 
 const PersonnelPage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ const PersonnelPage = () => {
   const recent = searchParams.get("recent") === "1";
   const recentSince = recent ? Date.now() - 5 * 60 * 1000 : undefined;
   const [search, setSearch] = useState("");
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [selected, setSelected] = useState<Personnel | null>(null);
 
   const { data: personnel = [] } = useQuery({
     queryKey: ["personnel"],
@@ -56,7 +59,7 @@ const PersonnelPage = () => {
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <Button onClick={() => navigate("/personnel/upload")}>آپلود</Button>
+          <Button onClick={() => navigate("/uploads/personnel")}>آپلود</Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">دانلود تمپلیت</Button>
@@ -108,24 +111,30 @@ const PersonnelPage = () => {
             <TableHead>عنوان شغلی</TableHead>
             <TableHead>دپارتمان</TableHead>
             <TableHead>دوره‌های موردنیاز</TableHead>
+            <TableHead>جایگاه</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {displayed.map((p) => (
-            <TableRow
+          <TableRow
               key={p.emp_code}
               className="cursor-pointer"
-              onClick={() => navigate(`/personnel/${p.emp_code}`)}
             >
-              <TableCell>{p.emp_code}</TableCell>
-              <TableCell>{p.name}</TableCell>
-              <TableCell>{p.job_title ?? ""}</TableCell>
-              <TableCell>{p.department_name ?? ""}</TableCell>
-              <TableCell>{linkCount.get(p.job_title_id ?? "") ?? 0}</TableCell>
+              <TableCell onClick={() => navigate(`/personnel/${p.emp_code}`)}>{p.emp_code}</TableCell>
+              <TableCell onClick={() => navigate(`/personnel/${p.emp_code}`)}>{p.name}</TableCell>
+              <TableCell onClick={() => navigate(`/personnel/${p.emp_code}`)}>{p.job_title ?? ""}</TableCell>
+              <TableCell onClick={() => navigate(`/personnel/${p.emp_code}`)}>{p.department_name ?? ""}</TableCell>
+              <TableCell onClick={() => navigate(`/personnel/${p.emp_code}`)}>{linkCount.get(p.job_title_id ?? "") ?? 0}</TableCell>
+              <TableCell>
+                <Button size="sm" onClick={(e) => { e.stopPropagation(); setSelected(p); setAssignOpen(true); }}>تعریف جایگاه</Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      {selected && (
+        <AssignOrgDialog person={selected} open={assignOpen} onOpenChange={(o) => { setAssignOpen(o); if (!o) setSelected(null); }} />
+      )}
     </div>
   );
 };

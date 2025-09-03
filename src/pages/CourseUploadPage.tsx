@@ -4,13 +4,19 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import UploadPreviewDialog, { PreviewStats } from "@/components/UploadPreviewDialog";
-import { readRows } from "@/lib/xlsx";
+import { readRows, downloadTemplateCourses } from "@/lib/xlsx";
 import { CourseRow, rowToCourse, CourseRowType } from "@/schemas/course";
 import { db, bulkUpsertCourses, Course } from "@/db";
 import { useToast } from "@/components/ui/use-toast";
 
-const UploadPage = () => {
+const CourseUploadPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<PreviewStats | null>(null);
@@ -71,8 +77,17 @@ const UploadPage = () => {
   return (
     <div className="p-4 flex justify-center">
       <Card className="w-full max-w-xl">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>آپلود دوره‌ها</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">دانلود تمپلیت</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => downloadTemplateCourses("xlsx")}>XLSX</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => downloadTemplateCourses("csv")}>CSV</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -97,5 +112,5 @@ const UploadPage = () => {
   );
 };
 
-export default UploadPage;
+export default CourseUploadPage;
 

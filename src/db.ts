@@ -40,7 +40,9 @@ export interface PersonCourse {
   course_code: string;
   status?: "passed" | "in_progress" | "failed";
   score?: number;
-  date?: string;
+  hours?: number;
+  from?: string;
+  to?: string;
   createdAt: number;
 }
 
@@ -68,6 +70,26 @@ export interface Master {
   createdAt: number;
 }
 
+export interface PersonOrgHistory {
+  id?: number;
+  emp_code: string;
+  decree_code?: string;
+  decree_title?: string;
+  post_code?: string;
+  post_title?: string;
+  section_code?: string;
+  section_title?: string;
+  department_code?: string;
+  department_title?: string;
+  management_code?: string;
+  management_title?: string;
+  affiliation?: string;
+  from: string;
+  to?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 class GrowLadderDB extends Dexie {
   public courses!: Table<Course, string>;
   public personnel!: Table<Personnel, string>;
@@ -80,6 +102,7 @@ class GrowLadderDB extends Dexie {
   public sections!: Table<Master, string>;
   public departments!: Table<Master, string>;
   public managements!: Table<Master, string>;
+  public personOrgHistory!: Table<PersonOrgHistory, number>;
 
   public constructor() {
     super("growladder");
@@ -121,6 +144,18 @@ class GrowLadderDB extends Dexie {
       .upgrade((tx) => {
         const tbl = tx.table<Personnel, string>("personnel");
         return tbl.toCollection().modify(() => {});
+      });
+
+    this.version(5)
+      .stores({
+        personCourse:
+          "[emp_code+course_code], emp_code, course_code, status, score, hours, from, to, createdAt",
+        personOrgHistory:
+          "++id, emp_code, from, to, decree_code, post_code, section_code, department_code, management_code",
+      })
+      .upgrade((tx) => {
+        const pc = tx.table<PersonCourse, [string, string]>("personCourse");
+        return pc.toCollection().modify(() => {});
       });
   }
 }

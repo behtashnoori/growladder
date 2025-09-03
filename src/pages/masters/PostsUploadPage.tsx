@@ -9,7 +9,7 @@ const PostsUploadPage = () => (
     queryKey="posts"
     templateFn={downloadTemplatePosts}
     exportName="posts"
-    navigateTo="/upload/posts?recent=1"
+    navigateTo="/uploads/posts?recent=1"
   />
 );
 

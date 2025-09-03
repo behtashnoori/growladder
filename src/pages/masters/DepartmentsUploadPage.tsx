@@ -9,7 +9,7 @@ const DepartmentsUploadPage = () => (
     queryKey="departments"
     templateFn={downloadTemplateDepartments}
     exportName="departments"
-    navigateTo="/upload/departments?recent=1"
+    navigateTo="/uploads/departments?recent=1"
   />
 );
 

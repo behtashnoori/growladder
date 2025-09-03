@@ -9,7 +9,7 @@ const DecreesUploadPage = () => (
     queryKey="decrees"
     templateFn={downloadTemplateDecrees}
     exportName="decrees"
-    navigateTo="/upload/decrees?recent=1"
+    navigateTo="/uploads/decrees?recent=1"
   />
 );
 

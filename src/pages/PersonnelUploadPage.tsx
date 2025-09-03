@@ -4,10 +4,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import PersonnelUploadPreviewDialog, {
   PreviewStats,
 } from "@/components/PersonnelUploadPreviewDialog";
-import { readRows } from "@/lib/xlsx";
+import { readRows, downloadTemplatePersonnel } from "@/lib/xlsx";
 import { PersonnelRow, rowToPersonnel, PersonnelRowType } from "@/schemas/personnel";
 import { db, bulkUpsertPersonnel, Personnel } from "@/db";
 import { normalizeRow, PERSONNEL_HEADERS } from "@/lib/headers";
@@ -72,8 +78,17 @@ const PersonnelUploadPage = () => {
   return (
     <div className="p-4 flex justify-center">
       <Card className="w-full max-w-xl">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>آپلود پرسنل</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">دانلود تمپلیت</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => downloadTemplatePersonnel("xlsx")}>XLSX</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => downloadTemplatePersonnel("csv")}>CSV</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
