@@ -1,0 +1,10 @@
+[
+  {
+    "username": "admin",
+    "passwordHash": "45f173ed4e1017b45f16afd2c3942b8c:9eb2c5cc6c55f57c9947cfe251245bb4e11e80b40f65f38437fa0bc6018cfe69706aac2adb56183553bdfcb6bd910a4dc30aa1de1f99bf4bf2ec5e7cf1707145"
+  },
+  {
+    "username": "user",
+    "passwordHash": "86548f631f3d4064ea66d55ae85a870d:0b9e469a791fe99062f76616583705cbd02817a45be1ff5f3c8c02825afb3f098ae4301b0f7ec8189939d1bdb12302949422f0c2d710eb9c423ec92c53d6bfc9"
+  }
+]

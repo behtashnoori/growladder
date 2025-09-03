@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { 
-  BarChart3, 
-  BookOpen, 
-  Users, 
-  User, 
-  Upload, 
+import {
+  BarChart3,
+  BookOpen,
+  Users,
+  User,
+  Upload,
+  Briefcase,
+  FileUp,
   Award,
   Menu,
   X
@@ -22,7 +24,8 @@ const Navigation = () => {
     { path: '/courses', icon: BookOpen, label: 'دوره‌های آموزش', color: 'text-secondary' },
     { path: '/personnel', icon: Users, label: 'لیست پرسنل', color: 'text-accent' },
     { path: '/profiles', icon: User, label: 'پرونده آموزشی', color: 'text-level' },
-    { path: '/upload', icon: Upload, label: 'آپلود فایل', color: 'text-achievement' },
+    { path: '/uploads', icon: Upload, label: 'آپلود داده‌ها', color: 'text-secondary' },
+    { path: '/jobs', icon: Briefcase, label: 'شغل‌ها', color: 'text-secondary' },
   ];
 
   return (
