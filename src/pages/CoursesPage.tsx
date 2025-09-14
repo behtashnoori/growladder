@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getCourses, Course, db } from "@/db";
+import { getCourses, Course } from "@/db";
 import { Button } from "@/components/ui/button";
 import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
 import { Badge } from "@/components/ui/badge";
@@ -63,15 +63,6 @@ const CoursesPage = () => {
               <DropdownMenuItem onClick={() => exportCourses(courses, "csv")}>CSV</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            variant="destructive"
-            onClick={async () => {
-              await db.delete();
-              location.reload();
-            }}
-          >
-            حذف داده‌ها
-          </Button>
         </div>
         <Button
           variant={recent ? "default" : "outline"}
