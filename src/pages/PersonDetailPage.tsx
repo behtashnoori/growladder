@@ -72,24 +72,18 @@ const PersonDetailPage = () => {
     exportRows(data, `${person.emp_code}_courses`, type);
   };
 
-  const rank = person.decree_title ?? "";
-
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">{person.name}</h2>
           <p className="text-sm text-muted-foreground">
-            {person.emp_code} | {person.job_title ?? ""} | {rank}
+            {person.emp_code} | {person.job_title ?? ""}
           </p>
-          {rank !== "مدیر" && (
-            <p className="text-xs text-muted-foreground">
-              {person.department_name ?? ""}
-              {rank !== "رئیس" && person.section_title
-                ? ` | ${person.section_title}`
-                : ""}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            {person.department_name ?? ""}
+            {person.section_title ? ` | ${person.section_title}` : ""}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

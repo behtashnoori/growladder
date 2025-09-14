@@ -18,7 +18,6 @@ import JobDetailPage from "./pages/JobDetailPage";
 import JobCourseUploadPage from "./pages/JobCourseUploadPage";
 import EditEmployee from "./pages/employees/EditEmployee";
 import AddTraining from "./pages/trainings/AddTraining";
-import DecreesUploadPage from "./pages/masters/DecreesUploadPage";
 import PostsUploadPage from "./pages/masters/PostsUploadPage";
 import SectionsUploadPage from "./pages/masters/SectionsUploadPage";
 import DepartmentsUploadPage from "./pages/masters/DepartmentsUploadPage";
@@ -43,7 +42,6 @@ const App = () => (
           <Route path="/uploads" element={<AppLayout><UploadsPage /></AppLayout>} />
           <Route path="/uploads/courses" element={<AppLayout><CourseUploadPage /></AppLayout>} />
           <Route path="/uploads/personnel" element={<AppLayout><PersonnelUploadPage /></AppLayout>} />
-          <Route path="/uploads/decrees" element={<AppLayout><DecreesUploadPage /></AppLayout>} />
           <Route path="/uploads/posts" element={<AppLayout><PostsUploadPage /></AppLayout>} />
           <Route path="/uploads/sections" element={<AppLayout><SectionsUploadPage /></AppLayout>} />
           <Route path="/uploads/departments" element={<AppLayout><DepartmentsUploadPage /></AppLayout>} />

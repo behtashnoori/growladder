@@ -9,7 +9,8 @@ export function useDependentSelect(
   const [options, setOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    const opts = mapping[parent] ?? [];
+    const all = Array.from(new Set(Object.values(mapping).flat()));
+    const opts = parent ? mapping[parent] ?? [] : all;
     setOptions(opts);
     if (child && !opts.includes(child)) {
       setChild("");

@@ -8,6 +8,7 @@ export const employeeSchema = z
     position: z.string().min(1, "پست الزامی است"),
     department: z.string().optional(),
     section: z.string().optional(),
+    management: z.string().optional(),
     rank: z.string().min(1, "رده الزامی است"),
     positionStartDate: z.string().min(1, "تاریخ شروع سمت الزامی است"),
     hireDate: z.string().min(1, "تاریخ استخدام الزامی است"),

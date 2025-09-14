@@ -16,27 +16,46 @@ const EditEmployee = () => {
     position: "",
     department: "",
     section: "",
+    management: "",
     rank: "",
     positionStartDate: "",
     hireDate: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormValues, string>>>({});
-  const [mapping, setMapping] = useState<Record<string, string[]>>({});
+  const [mapping, setMapping] = useState<{
+    postSection: Record<string, string[]>;
+    sectionDepartment: Record<string, string[]>;
+    departmentManagement: Record<string, string[]>;
+  }>({ postSection: {}, sectionDepartment: {}, departmentManagement: {} });
   const [ranks, setRanks] = useState<Rank[]>([]);
 
   useEffect(() => {
     fetch("/mapping.json")
       .then((r) => r.json())
       .then(setMapping)
-      .catch(() => setMapping({}));
+      .catch(() =>
+        setMapping({ postSection: {}, sectionDepartment: {}, departmentManagement: {} })
+      );
     getRanks().then(setRanks);
   }, []);
 
-  const deptOptions = useDependentSelect(
+  const sectionOptions = useDependentSelect(
     form.position,
+    form.section,
+    (v) => setForm({ ...form, section: v }),
+    mapping.postSection
+  );
+  const deptOptions = useDependentSelect(
+    form.section,
     form.department,
     (v) => setForm({ ...form, department: v }),
-    mapping
+    mapping.sectionDepartment
+  );
+  const managementOptions = useDependentSelect(
+    form.department,
+    form.management,
+    (v) => setForm({ ...form, management: v }),
+    mapping.departmentManagement
   );
 
   useEffect(() => {
@@ -81,13 +100,31 @@ const EditEmployee = () => {
       <Select value={form.position} onValueChange={(v) => setForm({ ...form, position: v })}>
         <SelectTrigger dir="rtl"><SelectValue placeholder="پست" /></SelectTrigger>
         <SelectContent dir="rtl">
-          {Object.keys(mapping).map((p) => (
+          {Object.keys(mapping.postSection).map((p) => (
             <SelectItem key={p} value={p}>{p}</SelectItem>
           ))}
         </SelectContent>
       </Select>
       {errors.position && (
         <p className="text-sm text-destructive">{errors.position}</p>
+      )}
+      {form.rank !== "مدیر" && form.rank !== "رئیس" && (
+        <>
+          <Select
+            value={form.section}
+            onValueChange={(v) => setForm({ ...form, section: v })}
+          >
+            <SelectTrigger dir="rtl"><SelectValue placeholder="بخش" /></SelectTrigger>
+            <SelectContent dir="rtl">
+              {sectionOptions.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.section && (
+            <p className="text-sm text-destructive">{errors.section}</p>
+          )}
+        </>
       )}
       {form.rank !== "مدیر" && (
         <>
@@ -107,19 +144,17 @@ const EditEmployee = () => {
           )}
         </>
       )}
-      {form.rank !== "مدیر" && form.rank !== "رئیس" && (
-        <>
-          <Input
-            name="section"
-            placeholder="بخش"
-            value={form.section}
-            onChange={onChange}
-          />
-          {errors.section && (
-            <p className="text-sm text-destructive">{errors.section}</p>
-          )}
-        </>
-      )}
+      <Select
+        value={form.management}
+        onValueChange={(v) => setForm({ ...form, management: v })}
+      >
+        <SelectTrigger dir="rtl"><SelectValue placeholder="مدیریت" /></SelectTrigger>
+        <SelectContent dir="rtl">
+          {managementOptions.map((m) => (
+            <SelectItem key={m} value={m}>{m}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Select value={form.rank} onValueChange={(v) => setForm({ ...form, rank: v })}>
         <SelectTrigger dir="rtl"><SelectValue placeholder="رده پست" /></SelectTrigger>
         <SelectContent dir="rtl">

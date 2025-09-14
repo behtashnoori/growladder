@@ -12,7 +12,7 @@ interface Props {
   onSubmit: (u: OrgUnit) => void;
 }
 
-const types: OrgUnitType[] = ["management", "department", "section", "post", "decree"];
+const types: OrgUnitType[] = ["management", "department", "section", "post"];
 
 const OrgUnitForm = ({ unit, parents, onSubmit }: Props) => {
   const { register, handleSubmit, watch, setValue } = useForm<OrgUnit>({

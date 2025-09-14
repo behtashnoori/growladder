@@ -36,15 +36,6 @@ function masterTemplate(name: string, type: "xlsx" | "csv") {
   download(rows, `${name}_template`, type);
 }
 
-export const downloadTemplateDecrees = (type: "xlsx" | "csv") => {
-  const rows = [
-    { code: "D1", title: "نمونه", note: "" },
-    { code: "D2", title: "نمونه ۲", note: "توضیح" },
-    { code: "D3", title: "نمونه ۳", note: "" },
-  ];
-  download(rows, "decrees_template", type);
-};
-
 export const downloadTemplatePosts = (type: "xlsx" | "csv") => masterTemplate("posts", type);
 export const downloadTemplateSections = (type: "xlsx" | "csv") => masterTemplate("sections", type);
 export const downloadTemplateDepartments = (type: "xlsx" | "csv") => masterTemplate("departments", type);

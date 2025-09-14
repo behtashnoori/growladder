@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { downloadTemplateCourses } from "@/lib/xlsx";
 import {
   downloadTemplatePersonnel,
-  downloadTemplateDecrees,
   downloadTemplatePosts,
   downloadTemplateSections,
   downloadTemplateDepartments,
@@ -21,11 +20,6 @@ const items = [
     label: "پرسنل",
     to: "/uploads/personnel",
     template: (t: "xlsx" | "csv") => downloadTemplatePersonnel(t),
-  },
-  {
-    label: "احکام کارگزینی",
-    to: "/uploads/decrees",
-    template: (t: "xlsx" | "csv") => downloadTemplateDecrees(t),
   },
   {
     label: "پست‌ها",

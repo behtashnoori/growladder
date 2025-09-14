@@ -6,5 +6,6 @@ export interface Employee {
   position: string;
   department?: string;
   section?: string;
+  management?: string;
   rank: string;
 }

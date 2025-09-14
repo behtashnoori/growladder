@@ -1,4 +1,4 @@
-export type OrgUnitType = "management" | "department" | "section" | "post" | "decree";
+export type OrgUnitType = "management" | "department" | "section" | "post";
 
 export interface OrgUnit {
   id: string;
