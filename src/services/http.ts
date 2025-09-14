@@ -5,17 +5,10 @@ import { toast } from "sonner";
 const http = axios.create({
   baseURL: "/api",
   timeout: 15000,
-  withCredentials: false,
-});
-
-// Optional: attach auth token if you store it in localStorage/sessionStorage
-http.interceptors.request.use((config) => {
-  const token = localStorage.getItem("auth_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
 });
 
 // Global response / error handling with a Persian-friendly toast
+let lastMsg = "";
 http.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -23,12 +16,15 @@ http.interceptors.response.use(
     const msg =
       err?.response?.data?.message ||
       err?.message ||
-      "خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.";
-    // show toast only once per error
-    try {
-      toast.error(`${msg}${status ? ` (HTTP ${status})` : ""}`);
-    } catch (e) {
-      // noop
+      "خطا در ارتباط با سرور";
+    if (msg !== lastMsg) {
+      lastMsg = msg;
+      setTimeout(() => (lastMsg = ""), 1500);
+      try {
+        toast.error(`${msg}${status ? ` (HTTP ${status})` : ""}`);
+      } catch {
+        // ignore toast errors
+      }
     }
     return Promise.reject(err);
   }

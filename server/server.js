@@ -61,5 +61,17 @@ app.get("/api/employees", (req, res) => {
   }
 });
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: "Endpoint not found", path: req.path });
+});
+
+// Global error handler
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err, req, res, next) => {
+  console.error("UNCAUGHT:", err.stack || err);
+  res.status(500).json({ message: "خطای غیرمنتظره سمت سرور" });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log("API on http://localhost:" + PORT));
