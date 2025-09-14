@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { db, Personnel, PersonOrgHistory } from "@/db";
+import { fetchOrgUnits } from "@/services/orgUnits";
 import { useToast } from "@/components/ui/use-toast";
 
 interface Props {
@@ -27,6 +28,7 @@ const AssignOrgDialog = ({ person, open, onOpenChange }: Props) => {
   const { data: sections = [] } = useQuery({ queryKey: ["sections"], queryFn: () => db.sections.toArray() });
   const { data: departments = [] } = useQuery({ queryKey: ["departments"], queryFn: () => db.departments.toArray() });
   const { data: managements = [] } = useQuery({ queryKey: ["managements"], queryFn: () => db.managements.toArray() });
+  const { data: orgUnits = [] } = useQuery({ queryKey: ["orgUnits"], queryFn: () => fetchOrgUnits() });
 
   const [decree, setDecree] = useState(person.decree_code ?? "");
   const [post, setPost] = useState(person.post_code ?? "");
@@ -37,6 +39,10 @@ const AssignOrgDialog = ({ person, open, onOpenChange }: Props) => {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
+  const selectedDept = orgUnits.find((o) => o.id === department);
+  const allowedPosts = selectedDept?.headRoleAllowed?.length
+    ? posts.filter((p) => selectedDept.headRoleAllowed!.includes(p.code))
+    : posts;
   const save = async () => {
     const now = Date.now();
     await db.transaction("rw", db.personnel, db.personOrgHistory, async () => {
@@ -104,7 +110,7 @@ const AssignOrgDialog = ({ person, open, onOpenChange }: Props) => {
           <Select value={post} onValueChange={setPost}>
             <SelectTrigger dir="rtl"><SelectValue placeholder="پست" /></SelectTrigger>
             <SelectContent dir="rtl">
-              {posts.map((p) => (
+              {allowedPosts.map((p) => (
                 <SelectItem key={p.code} value={p.code}>{`${p.code} - ${p.title}`}</SelectItem>
               ))}
             </SelectContent>
@@ -125,14 +131,16 @@ const AssignOrgDialog = ({ person, open, onOpenChange }: Props) => {
               ))}
             </SelectContent>
           </Select>
-          <Select value={management} onValueChange={setManagement}>
-            <SelectTrigger dir="rtl"><SelectValue placeholder="مدیریت" /></SelectTrigger>
-            <SelectContent dir="rtl">
-              {managements.map((m) => (
-                <SelectItem key={m.code} value={m.code}>{`${m.code} - ${m.title}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {!selectedDept?.isIndependent && (
+            <Select value={management} onValueChange={setManagement}>
+              <SelectTrigger dir="rtl"><SelectValue placeholder="مدیریت" /></SelectTrigger>
+              <SelectContent dir="rtl">
+                {managements.map((m) => (
+                  <SelectItem key={m.code} value={m.code}>{`${m.code} - ${m.title}`}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Input placeholder="تعلق سازمانی" value={affiliation} onChange={(e) => setAffiliation(e.target.value)} dir="rtl" />
           <div className="flex gap-2" dir="rtl">
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />

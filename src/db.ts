@@ -1,4 +1,5 @@
 import Dexie, { Table } from "dexie";
+import { OrgUnit, ROOT_ORG_ID } from "@/types/org-unit";
 
 export interface Course {
   code: string;
@@ -103,6 +104,7 @@ class GrowLadderDB extends Dexie {
   public sections!: Table<Master, string>;
   public departments!: Table<Master, string>;
   public managements!: Table<Master, string>;
+  public orgUnits!: Table<OrgUnit, string>;
   public personOrgHistory!: Table<PersonOrgHistory, number>;
 
   public constructor() {
@@ -157,6 +159,15 @@ class GrowLadderDB extends Dexie {
       .upgrade((tx) => {
         const pc = tx.table<PersonCourse, [string, string]>("personCourse");
         return pc.toCollection().modify(() => {});
+      });
+
+    this.version(6)
+      .stores({
+        orgUnits: "&id, name, unitType, parentId, isIndependent, headRoleAllowed",
+      })
+      .upgrade((tx) => {
+        const ou = tx.table<OrgUnit, string>("orgUnits");
+        return ou.toCollection().modify(() => {});
       });
   }
 }
@@ -229,5 +240,26 @@ export async function bulkUpsertMasters(
   await db.transaction("rw", table, async () => {
     await chunkedBulkPut(table, items);
   });
+}
+
+export async function getOrgUnits(options?: {
+  isIndependent?: boolean;
+}): Promise<OrgUnit[]> {
+  const items = await db.orgUnits.toArray();
+  return options?.isIndependent ? items.filter((u) => u.isIndependent) : items;
+}
+
+export async function upsertOrgUnit(unit: OrgUnit): Promise<void> {
+  if (unit.isIndependent) {
+    if (unit.parentId && unit.parentId !== ROOT_ORG_ID) {
+      throw new Error("واحد مستقل نمی‌تواند والد غیر ریشه داشته باشد");
+    }
+  } else if (!unit.parentId) {
+    throw new Error("واحد غیر مستقل باید والد داشته باشد");
+  }
+  if (unit.parentId === unit.id) {
+    throw new Error("ساختار سازمانی حلقه‌ای است");
+  }
+  await db.orgUnits.put(unit);
 }
 

@@ -24,6 +24,7 @@ import SectionsUploadPage from "./pages/masters/SectionsUploadPage";
 import DepartmentsUploadPage from "./pages/masters/DepartmentsUploadPage";
 import ManagementsUploadPage from "./pages/masters/ManagementsUploadPage";
 import ImportRanks from "./pages/admin/ImportRanks";
+import OrgUnitsPage from "./pages/org/OrgUnitsPage";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/employees/edit" element={<AppLayout><EditEmployee /></AppLayout>} />
           <Route path="/trainings/add" element={<AppLayout><AddTraining /></AppLayout>} />
           <Route path="/admin/import-ranks" element={<AppLayout><ImportRanks /></AppLayout>} />
+          <Route path="/org-units" element={<AppLayout><OrgUnitsPage /></AppLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
