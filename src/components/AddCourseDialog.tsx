@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { db, PersonCourse } from "@/db";
 import { useToast } from "@/components/ui/use-toast";
+import { list as listCourses, Course } from "@/services/api/courses";
+import { create as createTraining } from "@/services/api/trainings";
 
 interface Props {
   emp_code: string;
@@ -23,7 +24,13 @@ interface Props {
 
 const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
   const { toast } = useToast();
-  const { data: courses = [] } = useQuery({ queryKey: ["courses"], queryFn: () => db.courses.toArray() });
+  const { data } = useQuery({ queryKey: ["courses"], queryFn: () => listCourses() });
+  const courses = (data?.items as Course[]) ?? [];
+  const qc = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: createTraining,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["trainings"] }),
+  });
   const [course, setCourse] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -36,19 +43,14 @@ const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
       toast({ variant: "destructive", title: "خطا در ذخیره" });
       return;
     }
-    const now = Date.now();
-    const rec: PersonCourse = {
-      emp_code,
-      course_code: course,
-      from: from || undefined,
-      to: to || undefined,
-      hours: hours ? Number(hours) : undefined,
-      attendancePercent: att,
-      absencePercent: 100 - att,
-      createdAt: now,
-    };
     try {
-      await db.personCourse.put(rec);
+      await mutation.mutateAsync({
+        id: crypto.randomUUID(),
+        employeeId: emp_code,
+        courseId: course,
+        attendancePercent: att,
+        date: from || undefined,
+      });
       toast({ title: "با موفقیت ذخیره شد" });
       onOpenChange(false);
       onSaved?.();

@@ -12,6 +12,8 @@ model Employee {
   fullName          String
   unitId            String?
   rank              String?
+  departmentId      String?
+  sectionId         String?
   hireDate          DateTime?
   positionStartDate DateTime?
   isActive          Boolean  @default(true)

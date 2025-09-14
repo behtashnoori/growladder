@@ -2,6 +2,7 @@ import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { validate } from "../middleware/validate.js";
+import { employeeSchema } from "../validators/employee.js";
 import { persianNormalize } from "../utils/persianNormalize.js";
 
 const prisma = new PrismaClient();
@@ -16,15 +17,7 @@ const querySchema = z.object({
   rank: z.string().optional(),
 });
 
-const bodySchema = z.object({
-  id: z.string(),
-  fullName: z.string(),
-  unitId: z.string().optional(),
-  rank: z.string().optional(),
-  hireDate: z.coerce.date().optional(),
-  positionStartDate: z.coerce.date().optional(),
-  isActive: z.boolean().optional(),
-});
+const bodySchema = employeeSchema;
 
 router.get("/", validate(querySchema, "query"), async (req, res, next) => {
   try {

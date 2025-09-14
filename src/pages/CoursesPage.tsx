@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getCourses, Course } from "@/db";
+import type { Course } from "@/services/api/courses";
+import { list as listCourses } from "@/services/api/courses";
 import { Button } from "@/components/ui/button";
 import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +18,11 @@ const CoursesPage = () => {
   const recent = searchParams.get("recent") === "1";
   const recentSince = recent ? Date.now() - 5 * 60 * 1000 : undefined;
 
-  const { data: courses = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["courses"],
-    queryFn: () => getCourses(),
+    queryFn: () => listCourses(),
   });
+  const courses = data?.items ?? [];
 
   const displayed = recentSince
     ? courses.filter((c) => c.createdAt >= recentSince)
