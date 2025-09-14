@@ -1,9 +1,9 @@
 import axios from "axios";
 import { toast } from "sonner";
 
-// Base URL comes from Vite env, fallback to local server
+// Requests are proxied to the backend by Vite during development
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000/api",
+  baseURL: "/api",
   timeout: 15000,
   withCredentials: false,
 });
