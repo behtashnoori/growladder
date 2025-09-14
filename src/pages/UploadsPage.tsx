@@ -46,6 +46,11 @@ const items = [
     to: "/uploads/job-course",
     template: undefined,
   },
+  {
+    label: "ایمپورت انبوه",
+    to: "/admin/import",
+    template: undefined,
+  },
 ];
 
 const UploadsPage = () => {
