@@ -7,3 +7,59 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Employee {
+  id                String   @id
+  fullName          String
+  unitId            String?
+  rank              String?
+  hireDate          DateTime?
+  positionStartDate DateTime?
+  isActive          Boolean  @default(true)
+  trainings         Training[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([fullName, unitId, rank])
+}
+
+model Course {
+  courseId  String           @id
+  title     String
+  isActive  Boolean          @default(true)
+  jobs      JobRequirement[]
+  trainings Training[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([title])
+}
+
+model JobRequirement {
+  id        String   @id
+  unitId    String?
+  jobTitle  String
+  courseId  String
+  type      String?
+  priority  String?
+  course    Course   @relation(fields: [courseId], references: [courseId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobTitle, unitId])
+}
+
+model Training {
+  id               String   @id
+  employeeId       String
+  courseId         String
+  attendancePercent Int?
+  date             DateTime?
+  status           String?
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  course           Course   @relation(fields: [courseId], references: [courseId])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([employeeId, date])
+}
+

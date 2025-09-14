@@ -6,7 +6,10 @@ export function validate<T>(schema: ZodSchema<T>, property: "body" | "query" = "
     const data = (req as Record<string, unknown>)[property];
     const result = schema.safeParse(data);
     if (!result.success) {
-      res.status(400).json({ error: result.error.flatten() });
+      const issue = result.error.issues[0];
+      res
+        .status(400)
+        .json({ message: issue.message, field: issue.path.join(".") });
       return;
     }
     (req as Record<string, unknown>)[property] = result.data;
