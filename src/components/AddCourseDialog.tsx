@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { db, PersonCourse } from "@/db";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -27,9 +28,14 @@ const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [hours, setHours] = useState("");
-  const [score, setScore] = useState("");
+  const [attendance, setAttendance] = useState("0");
 
   const save = async () => {
+    const att = Number(attendance);
+    if (isNaN(att) || att < 0 || att > 100) {
+      toast({ variant: "destructive", title: "خطا در ذخیره" });
+      return;
+    }
     const now = Date.now();
     const rec: PersonCourse = {
       emp_code,
@@ -37,14 +43,18 @@ const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
       from: from || undefined,
       to: to || undefined,
       hours: hours ? Number(hours) : undefined,
-      score: score ? Number(score) : undefined,
-      status: score ? "passed" : undefined,
+      attendancePercent: att,
+      absencePercent: 100 - att,
       createdAt: now,
     };
-    await db.personCourse.put(rec);
-    toast({ description: "ثبت شد" });
-    onOpenChange(false);
-    onSaved?.();
+    try {
+      await db.personCourse.put(rec);
+      toast({ title: "با موفقیت ذخیره شد" });
+      onOpenChange(false);
+      onSaved?.();
+    } catch {
+      toast({ variant: "destructive", title: "خطا در ذخیره" });
+    }
   };
 
   return (
@@ -66,8 +76,24 @@ const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
             <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
             <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
-          <Input type="number" placeholder="ساعت" value={hours} onChange={(e) => setHours(e.target.value)} dir="rtl" />
-          <Input type="number" placeholder="نمره" value={score} onChange={(e) => setScore(e.target.value)} dir="rtl" />
+          <Input
+            type="number"
+            placeholder="ساعت"
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
+            dir="rtl"
+          />
+          <Input
+            type="number"
+            placeholder="درصد حضور"
+            value={attendance}
+            onChange={(e) => setAttendance(e.target.value)}
+            dir="rtl"
+          />
+          <Progress value={Number(attendance)} />
+          <div className="text-sm text-muted-foreground" dir="rtl">
+            حضور: {attendance}% | غیبت: {100 - Number(attendance)}%
+          </div>
         </div>
         <DialogFooter>
           <Button onClick={save} disabled={!course}>ذخیره</Button>

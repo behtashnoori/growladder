@@ -2,7 +2,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCourses, Course, db } from "@/db";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { downloadTemplateCourses, exportRows } from "@/lib/xlsx";
@@ -25,6 +25,20 @@ const CoursesPage = () => {
   const displayed = recentSince
     ? courses.filter((c) => c.createdAt >= recentSince)
     : courses;
+
+  const columns: Column<Course>[] = [
+    { key: "code", title: "کد" },
+    { key: "title", title: "عنوان" },
+    { key: "category", title: "دسته", render: (r) => r.category ?? "" },
+    {
+      title: "ایجاد",
+      render: (r) => new Date(r.createdAt).toLocaleString(),
+    },
+    {
+      title: "به‌روزرسانی",
+      render: (r) => new Date(r.updatedAt).toLocaleString(),
+    },
+  ];
 
   return (
     <div className="p-4 space-y-4">
@@ -74,28 +88,11 @@ const CoursesPage = () => {
         </Button>
       </div>
       {recent && <Badge>افزوده‌های جدید</Badge>}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>کد</TableHead>
-            <TableHead>عنوان</TableHead>
-            <TableHead>دسته</TableHead>
-            <TableHead>ایجاد</TableHead>
-            <TableHead>به‌روزرسانی</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {displayed.map((c) => (
-            <TableRow key={c.code}>
-              <TableCell>{c.code}</TableCell>
-              <TableCell>{c.title}</TableCell>
-              <TableCell>{c.category ?? ""}</TableCell>
-              <TableCell>{new Date(c.createdAt).toLocaleString()}</TableCell>
-              <TableCell>{new Date(c.updatedAt).toLocaleString()}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <FilterableDataTable
+        rows={displayed}
+        columns={columns}
+        searchKeys={["code", "title", "category"]}
+      />
     </div>
   );
 };

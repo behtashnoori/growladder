@@ -39,7 +39,8 @@ export interface PersonCourse {
   emp_code: string;
   course_code: string;
   status?: "passed" | "in_progress" | "failed";
-  score?: number;
+  attendancePercent?: number;
+  absencePercent?: number;
   hours?: number;
   from?: string;
   to?: string;
@@ -120,7 +121,7 @@ class GrowLadderDB extends Dexie {
         personnel:
           "&emp_code, name, job_title_id, job_title, department_id, department_name, updatedAt, createdAt",
         personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, score, date, createdAt",
+          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, date, createdAt",
       })
       .upgrade(async (tx) => {
         const tbl = tx.table<Personnel, string>("personnel");
@@ -149,7 +150,7 @@ class GrowLadderDB extends Dexie {
     this.version(5)
       .stores({
         personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, score, hours, from, to, createdAt",
+          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, hours, from, to, createdAt",
         personOrgHistory:
           "++id, emp_code, from, to, decree_code, post_code, section_code, department_code, management_code",
       })

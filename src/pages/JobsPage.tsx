@@ -2,19 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import { db, getJobs } from "@/db";
+import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
+import { db, getJobs, Job } from "@/db";
 import { exportRows } from "@/lib/xlsx";
 
 const JobsPage = () => {
-  const { data: jobs } = useQuery({ queryKey: ["jobs"], queryFn: () => getJobs() });
+  const { data: jobs = [] } = useQuery({ queryKey: ["jobs"], queryFn: () => getJobs() });
   const { data: links } = useQuery({ queryKey: ["jobCourseReq"], queryFn: () => db.jobCourseReq.toArray() });
   const counts = new Map<string, number>();
   links?.forEach((l) => {
@@ -44,6 +37,20 @@ const JobsPage = () => {
     exportRows(rows, "job_course", type);
   };
 
+  const columns: Column<Job>[] = [
+    { key: "job_title_id", title: "شناسه شغل" },
+    { key: "job_title", title: "عنوان شغل" },
+    {
+      key: "department_name",
+      title: "واحد",
+      render: (r) => r.department_name ?? "",
+    },
+    {
+      title: "تعداد دوره",
+      render: (r) => counts.get(r.job_title_id) ?? 0,
+    },
+  ];
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex flex-wrap gap-2 justify-between">
@@ -66,30 +73,15 @@ const JobsPage = () => {
         </div>
       </div>
       {recent && <Badge variant="secondary">تازه به‌روزرسانی‌شده</Badge>}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>شناسه شغل</TableHead>
-            <TableHead>عنوان شغل</TableHead>
-            <TableHead>واحد</TableHead>
-            <TableHead>تعداد دوره</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {jobs?.map((j) => (
-            <TableRow
-              key={j.job_title_id}
-              className="cursor-pointer"
-              onClick={() => navigate(`/jobs/${j.job_title_id}`)}
-            >
-              <TableCell>{j.job_title_id}</TableCell>
-              <TableCell>{j.job_title}</TableCell>
-              <TableCell>{j.department_name ?? ""}</TableCell>
-              <TableCell>{counts.get(j.job_title_id) ?? 0}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <FilterableDataTable
+        rows={jobs}
+        columns={columns}
+        searchKeys={["job_title_id", "job_title", "department_name"]}
+        rowProps={(row) => ({
+          onClick: () => navigate(`/jobs/${row.job_title_id}`),
+          className: "cursor-pointer",
+        })}
+      />
     </div>
   );
 };
