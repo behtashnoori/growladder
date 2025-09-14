@@ -2,8 +2,13 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
-import type { Employee } from "@/services/api/employees";
-import { list as listEmployees } from "@/services/api/employees";
+import { listEmployees } from "@/services/api/employees";
+
+interface Employee {
+  id: string;
+  fullName: string;
+  rank?: string;
+}
 
 const PersonnelPage = () => {
   const [q, setQ] = useState("");
