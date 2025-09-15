@@ -1,4 +1,5 @@
 import Dexie, { Table } from "dexie";
+import { OrgUnit, ROOT_ORG_ID } from "@/types/org-unit";
 
 export interface Course {
   code: string;
@@ -15,8 +16,6 @@ export interface Personnel {
   job_title?: string;
   department_id?: string;
   department_name?: string;
-  decree_code?: string;
-  decree_title?: string;
   post_code?: string;
   post_title?: string;
   section_code?: string;
@@ -39,7 +38,8 @@ export interface PersonCourse {
   emp_code: string;
   course_code: string;
   status?: "passed" | "in_progress" | "failed";
-  score?: number;
+  attendancePercent?: number;
+  absencePercent?: number;
   hours?: number;
   from?: string;
   to?: string;
@@ -73,8 +73,6 @@ export interface Master {
 export interface PersonOrgHistory {
   id?: number;
   emp_code: string;
-  decree_code?: string;
-  decree_title?: string;
   post_code?: string;
   post_title?: string;
   section_code?: string;
@@ -97,11 +95,11 @@ class GrowLadderDB extends Dexie {
   public personCourse!: Table<PersonCourse, [string, string]>;
   public jobs!: Table<Job, string>;
   public jobCourseReq!: Table<JobCourseReq, [string, string]>;
-  public decrees!: Table<Master, string>;
   public posts!: Table<Master, string>;
   public sections!: Table<Master, string>;
   public departments!: Table<Master, string>;
   public managements!: Table<Master, string>;
+  public orgUnits!: Table<OrgUnit, string>;
   public personOrgHistory!: Table<PersonOrgHistory, number>;
 
   public constructor() {
@@ -120,7 +118,7 @@ class GrowLadderDB extends Dexie {
         personnel:
           "&emp_code, name, job_title_id, job_title, department_id, department_name, updatedAt, createdAt",
         personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, score, date, createdAt",
+          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, date, createdAt",
       })
       .upgrade(async (tx) => {
         const tbl = tx.table<Personnel, string>("personnel");
@@ -134,8 +132,7 @@ class GrowLadderDB extends Dexie {
     this.version(4)
       .stores({
         personnel:
-          "&emp_code, name, job_title_id, job_title, department_id, department_name, decree_code, decree_title, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
-        decrees: "&code, title, note, updatedAt, createdAt",
+          "&emp_code, name, job_title_id, job_title, department_id, department_name, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
         posts: "&code, title, updatedAt, createdAt",
         sections: "&code, title, updatedAt, createdAt",
         departments: "&code, title, updatedAt, createdAt",
@@ -149,13 +146,42 @@ class GrowLadderDB extends Dexie {
     this.version(5)
       .stores({
         personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, score, hours, from, to, createdAt",
+          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, hours, from, to, createdAt",
         personOrgHistory:
-          "++id, emp_code, from, to, decree_code, post_code, section_code, department_code, management_code",
+          "++id, emp_code, from, to, post_code, section_code, department_code, management_code",
       })
       .upgrade((tx) => {
         const pc = tx.table<PersonCourse, [string, string]>("personCourse");
         return pc.toCollection().modify(() => {});
+      });
+
+    this.version(6)
+      .stores({
+        orgUnits: "&id, name, unitType, parentId, isIndependent, headRoleAllowed",
+      })
+      .upgrade((tx) => {
+        const ou = tx.table<OrgUnit, string>("orgUnits");
+        return ou.toCollection().modify(() => {});
+      });
+
+    this.version(7)
+      .stores({
+        personnel:
+          "&emp_code, name, job_title_id, job_title, department_id, department_name, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
+        personOrgHistory:
+          "++id, emp_code, from, to, post_code, section_code, department_code, management_code",
+        decrees: null,
+      })
+      .upgrade(async (tx) => {
+        const tbl = tx.table<Personnel, string>("personnel");
+        await tbl.toCollection().modify((p) => {
+          const rec = p as unknown as {
+            decree_code?: string;
+            decree_title?: string;
+          };
+          delete rec.decree_code;
+          delete rec.decree_title;
+        });
       });
   }
 }
@@ -228,5 +254,26 @@ export async function bulkUpsertMasters(
   await db.transaction("rw", table, async () => {
     await chunkedBulkPut(table, items);
   });
+}
+
+export async function getOrgUnits(options?: {
+  isIndependent?: boolean;
+}): Promise<OrgUnit[]> {
+  const items = await db.orgUnits.toArray();
+  return options?.isIndependent ? items.filter((u) => u.isIndependent) : items;
+}
+
+export async function upsertOrgUnit(unit: OrgUnit): Promise<void> {
+  if (unit.isIndependent) {
+    if (unit.parentId && unit.parentId !== ROOT_ORG_ID) {
+      throw new Error("واحد مستقل نمی‌تواند والد غیر ریشه داشته باشد");
+    }
+  } else if (!unit.parentId) {
+    throw new Error("واحد غیر مستقل باید والد داشته باشد");
+  }
+  if (unit.parentId === unit.id) {
+    throw new Error("ساختار سازمانی حلقه‌ای است");
+  }
+  await db.orgUnits.put(unit);
 }
 

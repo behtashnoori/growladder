@@ -78,7 +78,11 @@ const PersonDetailPage = () => {
         <div>
           <h2 className="text-xl font-bold">{person.name}</h2>
           <p className="text-sm text-muted-foreground">
-            {person.emp_code} | {person.job_title ?? ""} | {person.department_name ?? ""}
+            {person.emp_code} | {person.job_title ?? ""}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {person.department_name ?? ""}
+            {person.section_title ? ` | ${person.section_title}` : ""}
           </p>
         </div>
         <DropdownMenu>

@@ -32,8 +32,13 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the web and API servers concurrently (migrations run automatically).
 npm run dev
+
+# Optional Prisma helpers
+# (run without changing directories)
+# npm run prisma:migrate
+# npm run prisma:studio
 ```
 
 **Edit a file directly in GitHub**
@@ -86,6 +91,11 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 
 ## Master Data & Personnel Assignment (IndexedDB)
 
-برای ورود اطلاعات پایه مانند احکام کارگزینی، پست‌ها، بخش‌ها، اداره‌ها و مدیریت‌ها می‌توانید از صفحات مربوطه در منوی «اطلاعات پایه» استفاده کنید. هر صفحه امکان بارگذاری فایل‌های CSV/XLSX، پیش‌نمایش و commit را فراهم می‌کند. پس از ثبت، داده‌ها در IndexedDB نگهداری شده و در گفت‌وگوی «تعیین اطلاعات پایه» برای هر پرسنل قابل انتخاب هستند.
+برای ورود اطلاعات پایه مانند پست‌ها، بخش‌ها، اداره‌ها و مدیریت‌ها می‌توانید از صفحات مربوطه در منوی «اطلاعات پایه» استفاده کنید. هر صفحه امکان بارگذاری فایل‌های CSV/XLSX، پیش‌نمایش و commit را فراهم می‌کند. پس از ثبت، داده‌ها در IndexedDB نگهداری شده و در گفت‌وگوی «تعیین اطلاعات پایه» برای هر پرسنل قابل انتخاب هستند.
 
 پس از بارگذاری اطلاعات پایه و پرسنل، از منوی «آپلود داده‌ها» می‌توانید به سایر آپلودها دسترسی داشته باشید. در صفحهٔ «لیست پرسنل» دکمهٔ «تعریف جایگاه» امکان ثبت تاریخچهٔ سازمانی با بازهٔ زمانی را فراهم می‌کند. در «پروندهٔ آموزشی» هر شخص نیز می‌توان دورهٔ گذرانده را همراه با تاریخ، ساعت و نمره ثبت کرد.
+
+## Troubleshooting
+
+- اگر خطای `Cannot find module 'dotenv/config'` دیدید، بستهٔ `dotenv` باید در مسیر `server` نصب شده باشد.
+- اگر پیام `Port 5173 is already in use` نمایش داده شد، یا پورت را آزاد کنید یا اجازه دهید Vite به‌طور خودکار پورت بعدی را انتخاب کند؛ چون `strictPort:false` است.
