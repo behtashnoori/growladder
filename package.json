@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n web,api \"vite\" \"npm run api:dev\"",
+    "dev": "npm run api:setup && concurrently -n web,api \"vite\" \"npm run api:dev\"",
     "dev:web": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "api": "npm --prefix server run start",
     "api:dev": "npm --prefix server run dev",
+    "api:setup": "npm --prefix server install && npm --prefix server run prisma:generate",
     "prisma:generate": "npm --prefix server run prisma:generate",
     "prisma:migrate": "npm --prefix server run prisma:migrate",
     "prisma:studio": "npm --prefix server run prisma:studio",
