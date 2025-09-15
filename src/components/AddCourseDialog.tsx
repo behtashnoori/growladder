@@ -70,7 +70,7 @@ const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
             <SelectTrigger dir="rtl"><SelectValue placeholder="دوره" /></SelectTrigger>
             <SelectContent dir="rtl">
               {courses.map((c) => (
-                <SelectItem key={c.code} value={c.code}>{`${c.code} - ${c.title}`}</SelectItem>
+                <SelectItem key={c.courseId} value={c.courseId}>{`${c.courseId} - ${c.title}`}</SelectItem>
               ))}
             </SelectContent>
           </Select>

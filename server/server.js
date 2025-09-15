@@ -1,3 +1,4 @@
+/* eslint-disable */
 import express from "express";
 import cors from "cors";
 
@@ -35,6 +36,12 @@ const employees = [
   },
 ];
 
+// Minimal courses endpoint
+const courses = [
+  { courseId: "c1", title: "دوره نمونه ۱" },
+  { courseId: "c2", title: "دوره نمونه ۲" },
+];
+
 app.get("/api/employees", (req, res) => {
   try {
     const q = normalizeFa(req.query.q || "");
@@ -59,6 +66,10 @@ app.get("/api/employees", (req, res) => {
     console.error("GET /api/employees failed:", err);
     res.status(500).json({ message: "خطا در پردازش لیست پرسنل" });
   }
+});
+
+app.get("/api/courses", (_req, res) => {
+  res.json({ items: courses, total: courses.length, page: 1, pageSize: courses.length });
 });
 
 // 404 handler
