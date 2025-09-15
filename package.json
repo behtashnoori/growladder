@@ -11,8 +11,13 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "api": "npm --prefix server run start",
-    "api:dev": "npm --prefix server run dev"
+    "api:dev": "npm --prefix server run dev",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:studio": "npm --prefix server run prisma:studio",
+    "prisma:seed": "npm --prefix server run seed"
   },
+  "postinstall": "node scripts/postinstall.mjs",
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",

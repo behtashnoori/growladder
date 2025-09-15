@@ -4,11 +4,15 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
+    "predev": "npm run prisma:migrate",
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "prestart": "npm run prisma:migrate",
     "start": "node dist/index.js",
+    "prebuild": "npm run prisma:generate",
+    "build": "tsc -p tsconfig.json",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "postprisma:migrate": "npm run prisma:generate",
     "prisma:studio": "prisma studio",
     "seed": "ts-node src/seed.ts",
     "test": "node --test"

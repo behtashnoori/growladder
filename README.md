@@ -32,11 +32,13 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Prepare the API database (first run only).
-cd server && npm run prisma:migrate -- --name init && cd ..
-
-# Step 5: Start the web and API servers concurrently.
+# Step 4: Start the web and API servers concurrently (migrations run automatically).
 npm run dev
+
+# Optional Prisma helpers
+# (run without changing directories)
+# npm run prisma:migrate
+# npm run prisma:studio
 ```
 
 **Edit a file directly in GitHub**
