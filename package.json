@@ -11,8 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "api": "npm --prefix server run start",
-    "api:dev": "npm --prefix server run dev",
-    "api:setup": "npm --prefix server install && npm --prefix server run prisma:generate",
+    "api:dev": "node --require dotenv/config server/src/index.js",
+    "api:setup": "node server/scripts/safe-setup.js",
     "prisma:generate": "npm --prefix server run prisma:generate",
     "prisma:migrate": "npm --prefix server run prisma:migrate",
     "prisma:studio": "npm --prefix server run prisma:studio",
@@ -91,6 +91,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
-    "concurrently": "^8.2.2"
+    "concurrently": "^9.0.0"
   }
 }
