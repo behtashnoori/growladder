@@ -66,12 +66,28 @@ const CourseUploadPage = () => {
 
   const handleCommit = async () => {
     if (!preview) return;
-    await bulkUpsertCourses([...preview.toInsert, ...preview.toUpdate]);
-    queryClient.invalidateQueries({ queryKey: ["courses"] });
-    toast({
-      description: `افزوده ${preview.toInsert.length}، به‌روزرسانی ${preview.toUpdate.length}، تکراری ${preview.duplicates.length}، خطا ${preview.errors.length}`,
-    });
-    navigate("/courses?recent=1");
+    setLoading(true);
+    try {
+      await bulkUpsertCourses([...preview.toInsert, ...preview.toUpdate]);
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast({
+        title: "✅ آپلود موفقیت‌آمیز",
+        description: `${preview.toInsert.length} دوره جدید اضافه شد، ${preview.toUpdate.length} دوره به‌روزرسانی شد`,
+        duration: 5000,
+      });
+      setDialogOpen(false);
+      setPreview(null);
+      setFile(null);
+      navigate("/courses?recent=1");
+    } catch (error) {
+      toast({
+        title: "❌ خطا در آپلود",
+        description: "خطایی در آپلود داده‌ها رخ داد. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,6 +122,7 @@ const CourseUploadPage = () => {
           stats={preview}
           onCancel={() => setDialogOpen(false)}
           onCommit={handleCommit}
+          loading={loading}
         />
       )}
     </div>

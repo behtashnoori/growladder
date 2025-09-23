@@ -9,39 +9,33 @@ const router = Router();
 
 const querySchema = z.object({
   q: z.string().optional(),
-  page: z.string().optional(),
-  pageSize: z.string().optional(),
   sort: z.string().optional(),
 });
 
 const bodySchema = z.object({
-  courseId: z.string(),
+  code: z.string(),
   title: z.string(),
-  isActive: z.boolean().optional(),
+  category: z.string().optional(),
 });
 
 router.get("/", validate(querySchema, "query"), async (req, res, next) => {
   try {
-    const { q, page = "1", pageSize = "20", sort } =
-      req.query as Record<string, string>;
+    const { q, sort } = req.query as Record<string, string>;
     const where: Record<string, unknown> = {};
     if (q) {
       const n = persianNormalize(q);
       where.title = { contains: n };
     }
-    let orderBy: Record<string, "asc" | "desc"> | undefined;
+    let orderBy: Record<string, "asc" | "desc"> = { code: "asc" }; // Default sort by code
     if (sort) {
       const [field, direction] = sort.split(":");
       orderBy = { [field]: direction === "desc" ? "desc" : "asc" };
     }
-    const pageNum = parseInt(page, 10);
-    const size = parseInt(pageSize, 10);
-    const skip = (pageNum - 1) * size;
     const [total, items] = await Promise.all([
       prisma.course.count({ where }),
-      prisma.course.findMany({ where, orderBy, skip, take: size }),
+      prisma.course.findMany({ where, orderBy }),
     ]);
-    res.json({ items, total, page: pageNum, pageSize: size });
+    res.json({ items, total });
   } catch (e) {
     next(e);
   }
@@ -49,7 +43,7 @@ router.get("/", validate(querySchema, "query"), async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
   try {
-    const item = await prisma.course.findUnique({ where: { courseId: req.params.id } });
+    const item = await prisma.course.findUnique({ where: { code: req.params.id } });
     if (!item) return res.status(404).json({ message: "Not found" });
     res.json(item);
   } catch (e) {
@@ -68,7 +62,7 @@ router.post("/", validate(bodySchema), async (req, res, next) => {
 
 router.put("/:id", validate(bodySchema), async (req, res, next) => {
   try {
-    const item = await prisma.course.update({ where: { courseId: req.params.id }, data: req.body });
+    const item = await prisma.course.update({ where: { code: req.params.id }, data: req.body });
     res.json(item);
   } catch (e) {
     next(e);
@@ -77,7 +71,7 @@ router.put("/:id", validate(bodySchema), async (req, res, next) => {
 
 router.patch("/:id", validate(bodySchema.partial()), async (req, res, next) => {
   try {
-    const item = await prisma.course.update({ where: { courseId: req.params.id }, data: req.body });
+    const item = await prisma.course.update({ where: { code: req.params.id }, data: req.body });
     res.json(item);
   } catch (e) {
     next(e);
@@ -86,11 +80,24 @@ router.patch("/:id", validate(bodySchema.partial()), async (req, res, next) => {
 
 router.delete("/:id", async (req, res, next) => {
   try {
-    const item = await prisma.course.update({
-      where: { courseId: req.params.id },
-      data: { isActive: false },
+    const item = await prisma.course.delete({
+      where: { code: req.params.id },
     });
     res.json(item);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// Bulk operations
+router.post("/bulk", async (req, res, next) => {
+  try {
+    const items = req.body as any[];
+    const result = await prisma.course.createMany({
+      data: items,
+      skipDuplicates: true
+    });
+    res.status(201).json({ count: result.count });
   } catch (e) {
     next(e);
   }

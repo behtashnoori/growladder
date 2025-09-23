@@ -22,6 +22,8 @@ interface FilterableDataTableProps<T> {
   searchKeys: (keyof T)[];
   rowProps?: (row: T, index: number) => React.HTMLAttributes<HTMLTableRowElement>;
   indexOffset?: number;
+  onSearchChange?: (query: string) => void;
+  searchPlaceholder?: string;
 }
 
 export function FilterableDataTable<T>({
@@ -30,6 +32,8 @@ export function FilterableDataTable<T>({
   searchKeys,
   rowProps,
   indexOffset = 0,
+  onSearchChange,
+  searchPlaceholder = "جستجو",
 }: FilterableDataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -39,7 +43,16 @@ export function FilterableDataTable<T>({
     return () => clearTimeout(t);
   }, [search]);
 
+  useEffect(() => {
+    if (onSearchChange) {
+      onSearchChange(debounced);
+    }
+  }, [debounced, onSearchChange]);
+
   const filtered = useMemo(() => {
+    // If onSearchChange is provided, don't filter locally (backend will handle it)
+    if (onSearchChange) return rows;
+    
     const q = persianNormalize(debounced);
     if (!q) return rows;
     return rows.filter((row) =>
@@ -49,21 +62,22 @@ export function FilterableDataTable<T>({
         return persianNormalize(value).includes(q);
       })
     );
-  }, [debounced, rows, searchKeys]);
+  }, [debounced, rows, searchKeys, onSearchChange]);
 
   return (
     <div className="space-y-4">
       <Input
-        placeholder="جستجو"
+        placeholder={searchPlaceholder}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        className="w-full max-w-md"
       />
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>#</TableHead>
+            <TableHead className="w-16 text-center">#</TableHead>
             {columns.map((c) => (
-              <TableHead key={String(c.key ?? c.title)}>{c.title}</TableHead>
+              <TableHead key={String(c.key ?? c.title)} className="text-right">{c.title}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -77,9 +91,9 @@ export function FilterableDataTable<T>({
           )}
           {filtered.map((row, i) => (
             <TableRow key={i} {...(rowProps ? rowProps(row, i) : {})}>
-              <TableCell>{i + 1 + indexOffset}</TableCell>
+              <TableCell className="text-center font-medium">{i + 1 + indexOffset}</TableCell>
               {columns.map((c) => (
-                <TableCell key={String(c.key ?? c.title)}>
+                <TableCell key={String(c.key ?? c.title)} className="text-right">
                   {c.render
                     ? c.render(row, i)
                     : c.key

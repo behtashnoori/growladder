@@ -9,6 +9,6 @@ export interface BulkResult {
 export type BulkResource = "employees" | "courses" | "job-requirements" | "trainings";
 
 export async function bulkUpsert<T>(resource: BulkResource, rows: T[]): Promise<BulkResult> {
-  const res = await http.post(`/bulk/${resource}/upsert`, { rows });
+  const res = await http.post(`/api/bulk/${resource}/upsert`, { rows });
   return res.data as BulkResult;
 }

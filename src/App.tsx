@@ -17,7 +17,14 @@ import JobDetailPage from "./pages/JobDetailPage";
 import JobCourseUploadPage from "./pages/JobCourseUploadPage";
 import EditEmployee from "./pages/employees/EditEmployee";
 import AddTraining from "./pages/trainings/AddTraining";
+import PostsPage from "./pages/PostsPage";
+import PostRanksPage from "./pages/PostRanksPage";
+import SectionsPage from "./pages/SectionsPage";
+import DepartmentsPage from "./pages/DepartmentsPage";
+import ManagementsPage from "./pages/ManagementsPage";
+import OrgStructurePage from "./pages/OrgStructurePage";
 import PostsUploadPage from "./pages/masters/PostsUploadPage";
+import PostRankUploadPage from "./pages/PostRankUploadPage";
 import SectionsUploadPage from "./pages/masters/SectionsUploadPage";
 import DepartmentsUploadPage from "./pages/masters/DepartmentsUploadPage";
 import ManagementsUploadPage from "./pages/masters/ManagementsUploadPage";
@@ -37,11 +44,18 @@ const App = () => (
           <Route path="/courses" element={<AppLayout><CoursesPage /></AppLayout>} />
           <Route path="/personnel" element={<AppLayout><PersonnelPage /></AppLayout>} />
           <Route path="/personnel/:emp_code" element={<AppLayout><PersonDetailPage /></AppLayout>} />
+          <Route path="/posts" element={<AppLayout><PostsPage /></AppLayout>} />
+          <Route path="/post-ranks" element={<AppLayout><PostRanksPage /></AppLayout>} />
+          <Route path="/sections" element={<AppLayout><SectionsPage /></AppLayout>} />
+          <Route path="/departments" element={<AppLayout><DepartmentsPage /></AppLayout>} />
+          <Route path="/managements" element={<AppLayout><ManagementsPage /></AppLayout>} />
+          <Route path="/org-structure" element={<AppLayout><OrgStructurePage /></AppLayout>} />
           <Route path="/profiles" element={<AppLayout><TrainingProfiles /></AppLayout>} />
           <Route path="/uploads" element={<AppLayout><UploadsPage /></AppLayout>} />
           <Route path="/uploads/courses" element={<AppLayout><CourseUploadPage /></AppLayout>} />
           <Route path="/uploads/personnel" element={<AppLayout><PersonnelUploadPage /></AppLayout>} />
           <Route path="/uploads/posts" element={<AppLayout><PostsUploadPage /></AppLayout>} />
+          <Route path="/uploads/post-ranks" element={<AppLayout><PostRankUploadPage /></AppLayout>} />
           <Route path="/uploads/sections" element={<AppLayout><SectionsUploadPage /></AppLayout>} />
           <Route path="/uploads/departments" element={<AppLayout><DepartmentsUploadPage /></AppLayout>} />
           <Route path="/uploads/managements" element={<AppLayout><ManagementsUploadPage /></AppLayout>} />

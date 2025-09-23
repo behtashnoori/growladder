@@ -12,7 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { list as listCourses, Course } from "@/services/api/courses";
+import { courseApi, Course } from "@/services/api/courses";
 import { create as createTraining } from "@/services/api/trainings";
 
 interface Props {
@@ -24,7 +24,7 @@ interface Props {
 
 const AddCourseDialog = ({ emp_code, open, onOpenChange, onSaved }: Props) => {
   const { toast } = useToast();
-  const { data } = useQuery({ queryKey: ["courses"], queryFn: () => listCourses() });
+  const { data } = useQuery({ queryKey: ["courses"], queryFn: () => courseApi.getAll() });
   const courses = (data?.items as Course[]) ?? [];
   const qc = useQueryClient();
   const mutation = useMutation({

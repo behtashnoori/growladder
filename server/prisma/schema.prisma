@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -7,61 +7,191 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Employee {
-  id                String   @id
-  fullName          String
-  unitId            String?
-  rank              String?
-  departmentId      String?
-  sectionId         String?
-  hireDate          DateTime?
-  positionStartDate DateTime?
-  isActive          Boolean  @default(true)
-  trainings         Training[]
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+// Personnel/Employee model
+model Personnel {
+  emp_code           String   @id
+  name               String
+  job_title_id       String?
+  job_title          String?
+  department_id      String?
+  department_name    String?
+  post_code          String?
+  post_title         String?
+  post_rank_code     String?
+  post_rank_title    String?
+  section_code       String?
+  section_title      String?
+  department_code    String?
+  department_title   String?
+  management_code    String?
+  management_title   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  // Relations
+  personCourses      PersonCourse[]
+  orgHistory         PersonOrgHistory[]
 
-  @@index([fullName, unitId, rank])
+  @@index([name, job_title_id])
 }
 
+// Course model
 model Course {
-  courseId  String           @id
-  title     String
-  isActive  Boolean          @default(true)
-  jobs      JobRequirement[]
-  trainings Training[]
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  code               String   @id
+  title              String
+  category           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  // Relations
+  personCourses      PersonCourse[]
+  jobCourseReqs      JobCourseReq[]
 
   @@index([title])
 }
 
-model JobRequirement {
-  id        String   @id
-  unitId    String?
-  jobTitle  String
-  courseId  String
-  type      String?
-  priority  String?
-  course    Course   @relation(fields: [courseId], references: [courseId])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Job model
+model Job {
+  job_title_id       String   @id
+  job_title          String
+  department_name    String?
+  department_id      String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  // Relations
+  jobCourseReqs      JobCourseReq[]
 
-  @@index([jobTitle, unitId])
+  @@index([job_title])
 }
 
-model Training {
-  id               String   @id
-  employeeId       String
-  courseId         String
-  attendancePercent Int?
-  date             DateTime?
-  status           String?
-  employee         Employee @relation(fields: [employeeId], references: [id])
-  course           Course   @relation(fields: [courseId], references: [courseId])
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+// PersonCourse (Training) model
+model PersonCourse {
+  emp_code           String
+  course_code        String
+  status             String? // "passed" | "in_progress" | "failed"
+  attendancePercent  Int?
+  absencePercent     Int?
+  hours              Int?
+  from               String?
+  to                 String?
+  createdAt          DateTime @default(now())
+  
+  // Relations
+  personnel          Personnel @relation(fields: [emp_code], references: [emp_code], onDelete: Cascade)
+  course             Course    @relation(fields: [course_code], references: [code], onDelete: Cascade)
+  
+  @@id([emp_code, course_code])
+  @@index([emp_code])
+  @@index([course_code])
+}
 
-  @@index([employeeId, date])
+// JobCourseReq model
+model JobCourseReq {
+  job_title_id       String
+  course_code        String
+  required           Int
+  createdAt          DateTime @default(now())
+  
+  // Relations
+  job                Job    @relation(fields: [job_title_id], references: [job_title_id], onDelete: Cascade)
+  course             Course @relation(fields: [course_code], references: [code], onDelete: Cascade)
+  
+  @@id([job_title_id, course_code])
+  @@index([job_title_id])
+  @@index([course_code])
+}
+
+// Master data models
+model Post {
+  code               String   @id
+  title              String
+  note               String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([title])
+}
+
+model Section {
+  code               String   @id
+  title              String
+  note               String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([title])
+}
+
+model Department {
+  code               String   @id
+  title              String
+  note               String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([title])
+}
+
+model Management {
+  code               String   @id
+  title              String
+  note               String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([title])
+}
+
+model PostRank {
+  code               String   @id
+  title              String
+  note               String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([title])
+}
+
+// OrgUnit model
+model OrgUnit {
+  id                 String   @id
+  name               String
+  unitType           String?
+  parentId           String?
+  isIndependent      Boolean  @default(false)
+  headRoleAllowed    Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([isIndependent])
+}
+
+// PersonOrgHistory model
+model PersonOrgHistory {
+  id                 Int      @id @default(autoincrement())
+  emp_code           String
+  post_code          String?
+  post_title         String?
+  post_rank_code     String?
+  post_rank_title    String?
+  section_code       String?
+  section_title      String?
+  department_code    String?
+  department_title   String?
+  management_code    String?
+  management_title   String?
+  affiliation        String?
+  from               String
+  to                 String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  // Relations
+  personnel          Personnel @relation(fields: [emp_code], references: [emp_code], onDelete: Cascade)
+
+  @@index([emp_code])
+  @@index([from])
 }
 

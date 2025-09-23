@@ -12,6 +12,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { db, getPersonCourses } from "@/db";
+import { personnelApi } from "@/services/api/personnel";
+import { courseApi } from "@/services/api/courses";
 import { exportRows } from "@/lib/xlsx";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import AddCourseDialog from "@/components/AddCourseDialog";
@@ -20,7 +22,7 @@ const PersonDetailPage = () => {
   const { emp_code } = useParams();
   const personQuery = useQuery({
     queryKey: ["person", emp_code],
-    queryFn: () => db.personnel.get(emp_code!),
+    queryFn: () => personnelApi.getById(emp_code!),
     enabled: !!emp_code,
   });
   const linksQuery = useQuery({
@@ -29,7 +31,7 @@ const PersonDetailPage = () => {
       db.jobCourseReq.where({ job_title_id: personQuery.data!.job_title_id! }).toArray(),
     enabled: !!personQuery.data?.job_title_id,
   });
-  const coursesQuery = useQuery({ queryKey: ["courses"], queryFn: () => db.courses.toArray() });
+  const coursesQuery = useQuery({ queryKey: ["courses"], queryFn: () => courseApi.getAll() });
   const personCoursesQuery = useQuery({
     queryKey: ["personCourse", emp_code],
     queryFn: () => getPersonCourses(emp_code!),
@@ -83,6 +85,7 @@ const PersonDetailPage = () => {
           <p className="text-xs text-muted-foreground">
             {person.department_name ?? ""}
             {person.section_title ? ` | ${person.section_title}` : ""}
+            {person.post_rank_title ? ` | ${person.post_rank_title}` : ""}
           </p>
         </div>
         <DropdownMenu>

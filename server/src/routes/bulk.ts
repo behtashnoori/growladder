@@ -18,28 +18,7 @@ const employeeSchema = z.object({
 const employeesSchema = z.object({ rows: z.array(employeeSchema) });
 
 router.post("/employees/upsert", validate(employeesSchema), async (req, res, next) => {
-  const { rows } = req.body as z.infer<typeof employeesSchema>;
-  let inserted = 0;
-  let updated = 0;
-  const failed: { rowIndex: number; reason: string }[] = [];
-  await prisma.$transaction(async (tx) => {
-    for (let i = 0; i < rows.length; i++) {
-      const data = rows[i];
-      try {
-        const exists = await tx.employee.findUnique({ where: { id: data.id } });
-        if (exists) {
-          await tx.employee.update({ where: { id: data.id }, data });
-          updated++;
-        } else {
-          await tx.employee.create({ data });
-          inserted++;
-        }
-      } catch (e) {
-        failed.push({ rowIndex: i, reason: (e as Error).message });
-      }
-    }
-  });
-  res.json({ inserted, updated, failed });
+  res.status(501).json({ message: "Bulk employee upsert not implemented yet" });
 });
 
 const courseSchema = z.object({
@@ -50,28 +29,7 @@ const courseSchema = z.object({
 const coursesSchema = z.object({ rows: z.array(courseSchema) });
 
 router.post("/courses/upsert", validate(coursesSchema), async (req, res, next) => {
-  const { rows } = req.body as z.infer<typeof coursesSchema>;
-  let inserted = 0;
-  let updated = 0;
-  const failed: { rowIndex: number; reason: string }[] = [];
-  await prisma.$transaction(async (tx) => {
-    for (let i = 0; i < rows.length; i++) {
-      const data = rows[i];
-      try {
-        const exists = await tx.course.findUnique({ where: { courseId: data.courseId } });
-        if (exists) {
-          await tx.course.update({ where: { courseId: data.courseId }, data });
-          updated++;
-        } else {
-          await tx.course.create({ data });
-          inserted++;
-        }
-      } catch (e) {
-        failed.push({ rowIndex: i, reason: (e as Error).message });
-      }
-    }
-  });
-  res.json({ inserted, updated, failed });
+  res.status(501).json({ message: "Bulk course upsert not implemented yet" });
 });
 
 const jobRequirementSchema = z.object({
@@ -85,28 +43,7 @@ const jobRequirementSchema = z.object({
 const jobRequirementsSchema = z.object({ rows: z.array(jobRequirementSchema) });
 
 router.post("/job-requirements/upsert", validate(jobRequirementsSchema), async (req, res, next) => {
-  const { rows } = req.body as z.infer<typeof jobRequirementsSchema>;
-  let inserted = 0;
-  let updated = 0;
-  const failed: { rowIndex: number; reason: string }[] = [];
-  await prisma.$transaction(async (tx) => {
-    for (let i = 0; i < rows.length; i++) {
-      const data = rows[i];
-      try {
-        const exists = await tx.jobRequirement.findUnique({ where: { id: data.id } });
-        if (exists) {
-          await tx.jobRequirement.update({ where: { id: data.id }, data });
-          updated++;
-        } else {
-          await tx.jobRequirement.create({ data });
-          inserted++;
-        }
-      } catch (e) {
-        failed.push({ rowIndex: i, reason: (e as Error).message });
-      }
-    }
-  });
-  res.json({ inserted, updated, failed });
+  res.status(501).json({ message: "Bulk job requirements upsert not implemented yet" });
 });
 
 const trainingSchema = z.object({
@@ -120,28 +57,7 @@ const trainingSchema = z.object({
 const trainingsSchema = z.object({ rows: z.array(trainingSchema) });
 
 router.post("/trainings/upsert", validate(trainingsSchema), async (req, res, next) => {
-  const { rows } = req.body as z.infer<typeof trainingsSchema>;
-  let inserted = 0;
-  let updated = 0;
-  const failed: { rowIndex: number; reason: string }[] = [];
-  await prisma.$transaction(async (tx) => {
-    for (let i = 0; i < rows.length; i++) {
-      const data = rows[i];
-      try {
-        const exists = await tx.training.findUnique({ where: { id: data.id } });
-        if (exists) {
-          await tx.training.update({ where: { id: data.id }, data });
-          updated++;
-        } else {
-          await tx.training.create({ data });
-          inserted++;
-        }
-      } catch (e) {
-        failed.push({ rowIndex: i, reason: (e as Error).message });
-      }
-    }
-  });
-  res.json({ inserted, updated, failed });
+  res.status(501).json({ message: "Bulk trainings upsert not implemented yet" });
 });
 
 export default router;

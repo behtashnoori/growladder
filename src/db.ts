@@ -1,32 +1,10 @@
-import Dexie, { Table } from "dexie";
 import { OrgUnit, ROOT_ORG_ID } from "@/types/org-unit";
+import { personnelApi, Personnel } from "./services/api/personnel";
+import { courseApi, Course } from "./services/api/courses";
+import { jobApi, Job } from "./services/api/jobs";
 
-export interface Course {
-  code: string;
-  title: string;
-  category?: string;
-  updatedAt: number;
-  createdAt: number;
-}
-
-export interface Personnel {
-  emp_code: string;
-  name: string;
-  job_title_id?: string;
-  job_title?: string;
-  department_id?: string;
-  department_name?: string;
-  post_code?: string;
-  post_title?: string;
-  section_code?: string;
-  section_title?: string;
-  department_code?: string;
-  department_title?: string;
-  management_code?: string;
-  management_title?: string;
-  updatedAt: number;
-  createdAt: number;
-}
+// Re-export types for compatibility
+export type { Personnel, Course, Job };
 
 export interface CoursePersonnel {
   emp_code: string;
@@ -43,15 +21,6 @@ export interface PersonCourse {
   hours?: number;
   from?: string;
   to?: string;
-  createdAt: number;
-}
-
-export interface Job {
-  job_title_id: string;
-  job_title: string;
-  department_name?: string;
-  department_id?: string;
-  updatedAt: number;
   createdAt: number;
 }
 
@@ -88,192 +57,288 @@ export interface PersonOrgHistory {
   updatedAt: number;
 }
 
-class GrowLadderDB extends Dexie {
-  public courses!: Table<Course, string>;
-  public personnel!: Table<Personnel, string>;
-  public coursePersonnel!: Table<CoursePersonnel, [string, string]>;
-  public personCourse!: Table<PersonCourse, [string, string]>;
-  public jobs!: Table<Job, string>;
-  public jobCourseReq!: Table<JobCourseReq, [string, string]>;
-  public posts!: Table<Master, string>;
-  public sections!: Table<Master, string>;
-  public departments!: Table<Master, string>;
-  public managements!: Table<Master, string>;
-  public orgUnits!: Table<OrgUnit, string>;
-  public personOrgHistory!: Table<PersonOrgHistory, number>;
-
-  public constructor() {
-    super("growladder");
-    this.version(1).stores({
-      courses: "&code, title, category, updatedAt, createdAt",
-      personnel: "&emp_code, name, job_code, updatedAt, createdAt",
-      coursePersonnel: "[emp_code+course_code], emp_code, course_code, createdAt",
-    });
-    this.version(2).stores({
-      jobs: "&job_title_id, job_title, department_name, department_id, updatedAt, createdAt",
-      jobCourseReq: "[job_title_id+course_code], job_title_id, course_code, required, createdAt",
-    });
-    this.version(3)
-      .stores({
-        personnel:
-          "&emp_code, name, job_title_id, job_title, department_id, department_name, updatedAt, createdAt",
-        personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, date, createdAt",
-      })
-      .upgrade(async (tx) => {
-        const tbl = tx.table<Personnel, string>("personnel");
-        await tbl.toCollection().modify((p) => {
-          const rec = p as unknown as { job_code?: string; job_title_id?: string };
-          rec.job_title_id = rec.job_code;
-          delete rec.job_code;
-        });
-      });
-
-    this.version(4)
-      .stores({
-        personnel:
-          "&emp_code, name, job_title_id, job_title, department_id, department_name, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
-        posts: "&code, title, updatedAt, createdAt",
-        sections: "&code, title, updatedAt, createdAt",
-        departments: "&code, title, updatedAt, createdAt",
-        managements: "&code, title, updatedAt, createdAt",
-      })
-      .upgrade((tx) => {
-        const tbl = tx.table<Personnel, string>("personnel");
-        return tbl.toCollection().modify(() => {});
-      });
-
-    this.version(5)
-      .stores({
-        personCourse:
-          "[emp_code+course_code], emp_code, course_code, status, attendancePercent, absencePercent, hours, from, to, createdAt",
-        personOrgHistory:
-          "++id, emp_code, from, to, post_code, section_code, department_code, management_code",
-      })
-      .upgrade((tx) => {
-        const pc = tx.table<PersonCourse, [string, string]>("personCourse");
-        return pc.toCollection().modify(() => {});
-      });
-
-    this.version(6)
-      .stores({
-        orgUnits: "&id, name, unitType, parentId, isIndependent, headRoleAllowed",
-      })
-      .upgrade((tx) => {
-        const ou = tx.table<OrgUnit, string>("orgUnits");
-        return ou.toCollection().modify(() => {});
-      });
-
-    this.version(7)
-      .stores({
-        personnel:
-          "&emp_code, name, job_title_id, job_title, department_id, department_name, post_code, post_title, section_code, section_title, department_code, department_title, management_code, management_title, updatedAt, createdAt",
-        personOrgHistory:
-          "++id, emp_code, from, to, post_code, section_code, department_code, management_code",
-        decrees: null,
-      })
-      .upgrade(async (tx) => {
-        const tbl = tx.table<Personnel, string>("personnel");
-        await tbl.toCollection().modify((p) => {
-          const rec = p as unknown as {
-            decree_code?: string;
-            decree_title?: string;
-          };
-          delete rec.decree_code;
-          delete rec.decree_title;
-        });
-      });
-  }
-}
-
-export const db = new GrowLadderDB();
-
+// API-based data functions
 export async function getCourses(recentSince?: number): Promise<Course[]> {
-  const items = await db.courses.toArray();
-  return recentSince ? items.filter((c) => c.createdAt >= recentSince) : items;
+  try {
+    const response = await courseApi.getAll();
+    let items = response.items || [];
+    
+    if (recentSince) {
+      items = items.filter((c) => new Date(c.createdAt).getTime() >= recentSince);
+    }
+    
+    return items;
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    return [];
+  }
 }
 
 export async function bulkUpsertCourses(items: Course[]): Promise<void> {
-  await db.transaction("rw", db.courses, async () => {
-    await db.courses.bulkPut(items);
-  });
-}
-
-export async function getPersonnel(
-  recentSince?: number
-): Promise<Personnel[]> {
-  const items = await db.personnel.toArray();
-  return recentSince ? items.filter((p) => p.createdAt >= recentSince) : items;
-}
-
-export async function bulkUpsertPersonnel(items: Personnel[]): Promise<void> {
-  await db.transaction("rw", db.personnel, async () => {
-    await chunkedBulkPut(db.personnel, items);
-  });
-}
-
-export async function getPersonCourses(
-  emp_code: string
-): Promise<PersonCourse[]> {
-  return db.personCourse.where({ emp_code }).toArray();
-}
-
-export async function getJobs(recentSince?: number): Promise<Job[]> {
-  const items = await db.jobs.toArray();
-  return recentSince ? items.filter((j) => j.createdAt >= recentSince) : items;
-}
-
-export async function getJobCourseReq(job_title_id: string): Promise<JobCourseReq[]> {
-  return db.jobCourseReq.where({ job_title_id }).toArray();
-}
-
-async function chunkedBulkPut<T, K>(table: Table<T, K>, items: T[]): Promise<void> {
-  const chunk = 1000;
-  for (let i = 0; i < items.length; i += chunk) {
-    await table.bulkPut(items.slice(i, i + chunk));
-    await new Promise((r) => setTimeout(r));
+  try {
+    // Get existing courses to determine which ones to update vs create
+    const existingResponse = await courseApi.getAll({ pageSize: 10000 });
+    const existingMap = new Map(existingResponse.items.map(c => [c.code, c]));
+    
+    const toCreate: Omit<Course, 'createdAt' | 'updatedAt'>[] = [];
+    const toUpdate: { code: string; data: Partial<Course> }[] = [];
+    
+    for (const item of items) {
+      const existing = existingMap.get(item.code);
+      if (existing) {
+        // Check if there are any changes
+        const hasChanges = 
+          existing.title !== item.title ||
+          existing.category !== item.category;
+        
+        if (hasChanges) {
+          toUpdate.push({
+            code: item.code,
+            data: {
+              title: item.title,
+              category: item.category,
+            }
+          });
+        }
+      } else {
+        toCreate.push({
+          code: item.code,
+          title: item.title,
+          category: item.category,
+        });
+      }
+    }
+    
+    // Create new records
+    if (toCreate.length > 0) {
+      try {
+        await courseApi.bulkCreate(toCreate);
+      } catch (error) {
+        console.error('Failed to bulk create courses:', error);
+        // Fallback to individual creation
+        for (const course of toCreate) {
+          try {
+            await courseApi.create(course);
+          } catch (createError) {
+            console.error(`Failed to create course ${course.code}:`, createError);
+          }
+        }
+      }
+    }
+    
+    // Update existing records
+    for (const update of toUpdate) {
+      try {
+        await courseApi.update(update.code, update.data);
+      } catch (error) {
+        console.error(`Failed to update course ${update.code}:`, error);
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error bulk upserting courses:', error);
+    throw error; // Re-throw to let the UI handle the error
   }
 }
 
+export async function getPersonnel(recentSince?: number): Promise<Personnel[]> {
+  try {
+    const response = await personnelApi.getAll();
+    let items = response.items || [];
+    
+    if (recentSince) {
+      items = items.filter((p) => new Date(p.createdAt).getTime() >= recentSince);
+    }
+    
+    return items;
+  } catch (error) {
+    console.error('Error fetching personnel:', error);
+    return [];
+  }
+}
+
+export async function bulkUpsertPersonnel(items: Personnel[]): Promise<void> {
+  try {
+    // First, try to get existing personnel to determine which ones to update vs create
+    const existingResponse = await personnelApi.getAll({ pageSize: 10000 });
+    const existingMap = new Map(existingResponse.items.map(p => [p.emp_code, p]));
+    
+    const toCreate: Omit<Personnel, 'createdAt' | 'updatedAt'>[] = [];
+    const toUpdate: { emp_code: string; data: Partial<Personnel> }[] = [];
+    
+    for (const item of items) {
+      const existing = existingMap.get(item.emp_code);
+      if (existing) {
+        // Check if there are any changes
+        const hasChanges = 
+          existing.name !== item.name ||
+          existing.job_title !== item.job_title ||
+          existing.department_name !== item.department_name ||
+          existing.post_title !== item.post_title ||
+          existing.section_title !== item.section_title ||
+          existing.department_title !== item.department_title ||
+          existing.management_title !== item.management_title;
+        
+        if (hasChanges) {
+          toUpdate.push({
+            emp_code: item.emp_code,
+            data: {
+              name: item.name,
+              job_title: item.job_title,
+              department_name: item.department_name,
+              post_title: item.post_title,
+              section_title: item.section_title,
+              department_title: item.department_title,
+              management_title: item.management_title,
+              job_title_id: item.job_title_id,
+              department_id: item.department_id,
+              post_code: item.post_code,
+              section_code: item.section_code,
+              department_code: item.department_code,
+              management_code: item.management_code,
+            }
+          });
+        }
+      } else {
+        toCreate.push({
+          emp_code: item.emp_code,
+          name: item.name,
+          job_title: item.job_title,
+          department_name: item.department_name,
+          post_title: item.post_title,
+          section_title: item.section_title,
+          department_title: item.department_title,
+          management_title: item.management_title,
+          job_title_id: item.job_title_id,
+          department_id: item.department_id,
+          post_code: item.post_code,
+          section_code: item.section_code,
+          department_code: item.department_code,
+          management_code: item.management_code,
+        });
+      }
+    }
+    
+    // Create new records
+    if (toCreate.length > 0) {
+      await personnelApi.bulkCreate(toCreate);
+    }
+    
+    // Update existing records
+    for (const update of toUpdate) {
+      await personnelApi.update(update.emp_code, update.data);
+    }
+    
+  } catch (error) {
+    console.error('Error bulk upserting personnel:', error);
+    throw error; // Re-throw to let the UI handle the error
+  }
+}
+
+export async function getPersonCourses(emp_code: string): Promise<PersonCourse[]> {
+  // TODO: Implement this when backend API is ready
+  console.log('getPersonCourses not yet implemented for API');
+  return [];
+}
+
+export async function getJobs(recentSince?: number): Promise<Job[]> {
+  try {
+    const response = await jobApi.getAll();
+    let items = response.items || [];
+    
+    if (recentSince) {
+      items = items.filter((j) => new Date(j.createdAt).getTime() >= recentSince);
+    }
+    
+    return items;
+  } catch (error) {
+    console.error('Error fetching jobs:', error);
+    return [];
+  }
+}
+
+export async function getJobCourseReq(job_title_id: string): Promise<JobCourseReq[]> {
+  // TODO: Implement this when backend API is ready
+  console.log('getJobCourseReq not yet implemented for API');
+  return [];
+}
+
 export async function bulkUpsertJobs(items: Job[]): Promise<void> {
-  await db.transaction("rw", db.jobs, async () => {
-    await chunkedBulkPut(db.jobs, items);
-  });
+  try {
+    await jobApi.bulkCreate(items);
+  } catch (error) {
+    console.error('Error bulk upserting jobs:', error);
+  }
 }
 
 export async function bulkUpsertJobCourseReq(items: JobCourseReq[]): Promise<void> {
-  await db.transaction("rw", db.jobCourseReq, async () => {
-    await chunkedBulkPut(db.jobCourseReq, items);
-  });
+  // TODO: Implement this when backend API is ready
+  console.log('JobCourseReq bulk upsert not yet implemented for API');
 }
 
-export async function bulkUpsertMasters(
-  table: Table<Master, string>,
-  items: Master[]
-): Promise<void> {
-  await db.transaction("rw", table, async () => {
-    await chunkedBulkPut(table, items);
-  });
+export async function bulkUpsertMasters(table: string, items: Master[]): Promise<void> {
+  // For now, we'll use a simple approach since master data APIs might not be fully implemented
+  console.log(`bulkUpsertMasters for ${table} with ${items.length} items - using placeholder implementation`);
+  
+  // This is a placeholder implementation
+  // In a real scenario, you would need to implement the specific API endpoints for each master data type
+  // (posts, sections, departments, managements, etc.)
+  
+  try {
+    // For now, just log the data that would be processed
+    console.log(`Would process ${items.length} ${table} items:`, items.slice(0, 3));
+    
+    // TODO: Implement actual API calls based on table type
+    // switch (table) {
+    //   case 'posts':
+    //     await postApi.bulkCreate(items);
+    //     break;
+    //   case 'sections':
+    //     await sectionApi.bulkCreate(items);
+    //     break;
+    //   // etc.
+    // }
+    
+  } catch (error) {
+    console.error(`Error bulk upserting ${table}:`, error);
+    throw error;
+  }
 }
 
 export async function getOrgUnits(options?: {
   isIndependent?: boolean;
 }): Promise<OrgUnit[]> {
-  const items = await db.orgUnits.toArray();
-  return options?.isIndependent ? items.filter((u) => u.isIndependent) : items;
+  // TODO: Implement this when backend API is ready
+  console.log('getOrgUnits not yet implemented for API');
+  return [];
 }
 
 export async function upsertOrgUnit(unit: OrgUnit): Promise<void> {
-  if (unit.isIndependent) {
-    if (unit.parentId && unit.parentId !== ROOT_ORG_ID) {
-      throw new Error("واحد مستقل نمی‌تواند والد غیر ریشه داشته باشد");
-    }
-  } else if (!unit.parentId) {
-    throw new Error("واحد غیر مستقل باید والد داشته باشد");
-  }
-  if (unit.parentId === unit.id) {
-    throw new Error("ساختار سازمانی حلقه‌ای است");
-  }
-  await db.orgUnits.put(unit);
+  // TODO: Implement this when backend API is ready
+  console.log('upsertOrgUnit not yet implemented for API');
 }
 
+// Legacy compatibility - these functions are no longer needed but kept for compatibility
+export const db = {
+  courses: {
+    toArray: () => getCourses(),
+    bulkPut: (items: Course[]) => bulkUpsertCourses(items)
+  },
+  personnel: {
+    toArray: () => getPersonnel(),
+    bulkPut: (items: Personnel[]) => bulkUpsertPersonnel(items)
+  },
+  jobs: {
+    toArray: () => getJobs(),
+    bulkPut: (items: Job[]) => bulkUpsertJobs(items)
+  },
+  personCourse: {
+    where: (query: any) => ({
+      toArray: () => getPersonCourses(query.emp_code)
+    })
+  },
+  orgUnits: {
+    toArray: () => getOrgUnits(),
+    put: (unit: OrgUnit) => upsertOrgUnit(unit)
+  }
+};

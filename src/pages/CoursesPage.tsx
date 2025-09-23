@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { Course } from "@/services/api/courses";
-import { list as listCourses } from "@/services/api/courses";
+import { courseApi } from "@/services/api/courses";
 import { Button } from "@/components/ui/button";
 import FilterableDataTable, { Column } from "@/components/data/FilterableDataTable";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ const CoursesPage = () => {
 
   const { data } = useQuery({
     queryKey: ["courses"],
-    queryFn: () => listCourses(),
+    queryFn: () => courseApi.getAll(),
   });
   const courses = data?.items ?? [];
 
@@ -45,26 +45,11 @@ const CoursesPage = () => {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Button onClick={() => navigate("/uploads/courses")}>آپلود</Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">دانلود تمپلیت</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => downloadTemplateCourses("xlsx")}>XLSX</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => downloadTemplateCourses("csv")}>CSV</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">خروجی همه</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportCourses(courses, "xlsx")}>XLSX</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportCourses(courses, "csv")}>CSV</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">دوره‌های آموزش</h2>
+          <div className="text-sm text-gray-600">
+            تعداد کل: {data?.total ?? 0} دوره
+          </div>
         </div>
         <Button
           variant={recent ? "default" : "outline"}
@@ -80,11 +65,35 @@ const CoursesPage = () => {
           داده‌های اخیر
         </Button>
       </div>
+      
+      <div className="flex gap-2">
+        <Button onClick={() => navigate("/uploads/courses")}>آپلود</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">دانلود تمپلیت</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => downloadTemplateCourses("xlsx")}>XLSX</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => downloadTemplateCourses("csv")}>CSV</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">خروجی همه</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => exportCourses(courses, "xlsx")}>XLSX</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportCourses(courses, "csv")}>CSV</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      
       {recent && <Badge>افزوده‌های جدید</Badge>}
       <FilterableDataTable
         rows={displayed}
         columns={columns}
         searchKeys={["code", "title", "category"]}
+        indexOffset={0}
       />
     </div>
   );

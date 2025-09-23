@@ -29,14 +29,15 @@ export function downloadTemplatePersonnel(type: "xlsx" | "csv") {
 
 function masterTemplate(name: string, type: "xlsx" | "csv") {
   const rows = [
-    { code: "M1", title: "نمونه ۱" },
-    { code: "M2", title: "نمونه ۲" },
-    { code: "M3", title: "" },
+    { code: "M1", title: "نمونه ۱", note: "" },
+    { code: "M2", title: "نمونه ۲", note: "" },
+    { code: "M3", title: "نمونه ۳", note: "" },
   ];
   download(rows, `${name}_template`, type);
 }
 
 export const downloadTemplatePosts = (type: "xlsx" | "csv") => masterTemplate("posts", type);
+export const downloadTemplatePostRanks = (type: "xlsx" | "csv") => masterTemplate("post_ranks", type);
 export const downloadTemplateSections = (type: "xlsx" | "csv") => masterTemplate("sections", type);
 export const downloadTemplateDepartments = (type: "xlsx" | "csv") => masterTemplate("departments", type);
 export const downloadTemplateManagements = (type: "xlsx" | "csv") => masterTemplate("managements", type);

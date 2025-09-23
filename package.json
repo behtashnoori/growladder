@@ -4,14 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run api:setup && concurrently -k -p \"[{name}]\" -n web,api \"vite\" \"npm run api:dev\"",
-    "dev:web": "vite",
+    "setup:ports": "node scripts/port-manager.js",
+    "dev": "node scripts/simple-dev.js",
+    "dev:simple": "npm run setup:ports && npm run api:setup && concurrently -k -p \"[{name}]\" -n web,api \"npm run dev:web\" \"npm run api:dev\"",
+    "dev:web": "node scripts/start-frontend.js",
+    "dev:backend": "node scripts/start-backend.js",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "api": "npm --prefix server run start",
-    "api:dev": "node server/src/index.js",
+    "api:dev": "npm --prefix server run dev",
     "api:setup": "node server/scripts/safe-setup.js",
     "prisma:generate": "npm --prefix server run prisma:generate",
     "prisma:migrate": "npm --prefix server run prisma:migrate",
@@ -50,10 +53,12 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-query": "^5.83.0",
+    "axios": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "dexie": "^4.0.4",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
@@ -69,10 +74,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
-    "zod": "^3.25.76",
-    "dexie": "^4.0.4",
     "xlsx": "^0.18.5",
-    "axios": "^1.7.7"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -82,6 +85,8 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.0.0",
+    "cross-env": "^10.0.0",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -91,7 +96,6 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19",
-    "concurrently": "^9.0.0"
+    "vite": "^5.4.19"
   }
 }

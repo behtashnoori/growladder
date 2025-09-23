@@ -10,7 +10,7 @@ export interface JobRequirement {
 }
 
 export async function list(params: { unitId?: string } = {}) {
-  const res = await http.get("/job-requirements", { params });
+  const res = await http.get("/api/job-requirements", { params });
   return res.data as { items: JobRequirement[]; total: number };
 }
 
@@ -20,7 +20,7 @@ export async function get(id: string) {
 }
 
 export async function create(data: JobRequirement) {
-  const res = await http.post("/job-requirements", data);
+  const res = await http.post("/api/job-requirements", data);
   return res.data as JobRequirement;
 }
 

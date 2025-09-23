@@ -67,12 +67,28 @@ const PersonnelUploadPage = () => {
 
   const handleCommit = async () => {
     if (!preview) return;
-    await bulkUpsertPersonnel([...preview.toInsert, ...preview.toUpdate]);
-    queryClient.invalidateQueries({ queryKey: ["personnel"] });
-    toast({
-      description: `افزوده ${preview.toInsert.length}، به‌روزرسانی ${preview.toUpdate.length}، خطا ${preview.errors.length}`,
-    });
-    navigate("/personnel?recent=1");
+    setLoading(true);
+    try {
+      await bulkUpsertPersonnel([...preview.toInsert, ...preview.toUpdate]);
+      queryClient.invalidateQueries({ queryKey: ["personnel"] });
+      toast({
+        title: "✅ آپلود موفقیت‌آمیز",
+        description: `${preview.toInsert.length} رکورد جدید اضافه شد، ${preview.toUpdate.length} رکورد به‌روزرسانی شد`,
+        duration: 5000,
+      });
+      setDialogOpen(false);
+      setPreview(null);
+      setFile(null);
+      navigate("/personnel?recent=1");
+    } catch (error) {
+      toast({
+        title: "❌ خطا در آپلود",
+        description: "خطایی در آپلود داده‌ها رخ داد. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,6 +123,7 @@ const PersonnelUploadPage = () => {
           stats={preview}
           onCancel={() => setDialogOpen(false)}
           onCommit={handleCommit}
+          loading={loading}
         />
       )}
     </div>

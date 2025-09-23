@@ -12,30 +12,32 @@ const querySchema = z.object({
   page: z.string().optional(),
   pageSize: z.string().optional(),
   sort: z.string().optional(),
-  employeeId: z.string().optional(),
-  courseId: z.string().optional(),
+  emp_code: z.string().optional(),
+  course_code: z.string().optional(),
 });
 
 const bodySchema = z.object({
-  id: z.string(),
-  employeeId: z.string(),
-  courseId: z.string(),
-  attendancePercent: z.number().int().min(0).max(100).optional(),
-  date: z.coerce.date().optional(),
+  emp_code: z.string(),
+  course_code: z.string(),
   status: z.string().optional(),
+  attendancePercent: z.number().int().min(0).max(100).optional(),
+  absencePercent: z.number().int().min(0).max(100).optional(),
+  hours: z.number().int().optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
 });
 
 router.get("/", validate(querySchema, "query"), async (req, res, next) => {
   try {
-    const { q, page = "1", pageSize = "20", sort, employeeId, courseId } =
+    const { q, page = "1", pageSize = "20", sort, emp_code, course_code } =
       req.query as Record<string, string>;
     const where: Record<string, unknown> = {};
     if (q) {
       const n = persianNormalize(q);
       where.status = { contains: n };
     }
-    if (employeeId) where.employeeId = employeeId;
-    if (courseId) where.courseId = courseId;
+    if (emp_code) where.emp_code = emp_code;
+    if (course_code) where.course_code = course_code;
     let orderBy: Record<string, "asc" | "desc"> | undefined;
     if (sort) {
       const [field, direction] = sort.split(":");
@@ -45,8 +47,8 @@ router.get("/", validate(querySchema, "query"), async (req, res, next) => {
     const size = parseInt(pageSize, 10);
     const skip = (pageNum - 1) * size;
     const [total, items] = await Promise.all([
-      prisma.training.count({ where }),
-      prisma.training.findMany({ where, orderBy, skip, take: size }),
+      prisma.personCourse.count({ where }),
+      prisma.personCourse.findMany({ where, orderBy, skip, take: size }),
     ]);
     res.json({ items, total, page: pageNum, pageSize: size });
   } catch (e) {
@@ -54,9 +56,9 @@ router.get("/", validate(querySchema, "query"), async (req, res, next) => {
   }
 });
 
-router.get("/:id", async (req, res, next) => {
+router.get("/:emp_code/:course_code", async (req, res, next) => {
   try {
-    const item = await prisma.training.findUnique({ where: { id: req.params.id } });
+    const item = await prisma.personCourse.findUnique({ where: { emp_code_course_code: { emp_code: req.params.emp_code, course_code: req.params.course_code } } });
     if (!item) return res.status(404).json({ message: "Not found" });
     res.json(item);
   } catch (e) {
@@ -66,34 +68,34 @@ router.get("/:id", async (req, res, next) => {
 
 router.post("/", validate(bodySchema), async (req, res, next) => {
   try {
-    const item = await prisma.training.create({ data: req.body });
+    const item = await prisma.personCourse.create({ data: req.body });
     res.status(201).json(item);
   } catch (e) {
     next(e);
   }
 });
 
-router.put("/:id", validate(bodySchema), async (req, res, next) => {
+router.put("/:emp_code/:course_code", validate(bodySchema), async (req, res, next) => {
   try {
-    const item = await prisma.training.update({ where: { id: req.params.id }, data: req.body });
+    const item = await prisma.personCourse.update({ where: { emp_code_course_code: { emp_code: req.params.emp_code, course_code: req.params.course_code } }, data: req.body });
     res.json(item);
   } catch (e) {
     next(e);
   }
 });
 
-router.patch("/:id", validate(bodySchema.partial()), async (req, res, next) => {
+router.patch("/:emp_code/:course_code", validate(bodySchema.partial()), async (req, res, next) => {
   try {
-    const item = await prisma.training.update({ where: { id: req.params.id }, data: req.body });
+    const item = await prisma.personCourse.update({ where: { emp_code_course_code: { emp_code: req.params.emp_code, course_code: req.params.course_code } }, data: req.body });
     res.json(item);
   } catch (e) {
     next(e);
   }
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:emp_code/:course_code", async (req, res, next) => {
   try {
-    const item = await prisma.training.delete({ where: { id: req.params.id } });
+    const item = await prisma.personCourse.delete({ where: { emp_code_course_code: { emp_code: req.params.emp_code, course_code: req.params.course_code } } });
     res.json(item);
   } catch (e) {
     next(e);

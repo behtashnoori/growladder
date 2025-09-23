@@ -103,6 +103,7 @@ interface Props {
   stats: PreviewStats;
   onCommit: () => void;
   onCancel: () => void;
+  loading?: boolean;
 }
 
 const PersonnelUploadPreviewDialog = ({
@@ -110,13 +111,16 @@ const PersonnelUploadPreviewDialog = ({
   stats,
   onCommit,
   onCancel,
+  loading = false,
 }: Props) => (
   <Dialog open={open} onOpenChange={(v) => !v && onCancel()}>
-    <DialogContent className="max-w-4xl">
-      <DialogHeader>
+    <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
+      <DialogHeader className="flex-shrink-0">
         <DialogTitle>پیش‌نمایش پرسنل</DialogTitle>
       </DialogHeader>
-      <div className="space-y-4">
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-[60vh]">
+          <div className="space-y-4">
         <Section
           title="داده‌های جدید"
           rows={stats.toInsert}
@@ -164,12 +168,16 @@ const PersonnelUploadPreviewDialog = ({
             </>
           )}
         />
+          </div>
+        </ScrollArea>
       </div>
-      <DialogFooter className="mt-4">
-        <Button variant="outline" onClick={onCancel}>
+      <DialogFooter className="flex-shrink-0 mt-4 border-t pt-4">
+        <Button variant="outline" onClick={onCancel} disabled={loading}>
           بازگشت
         </Button>
-        <Button onClick={onCommit}>تایید</Button>
+        <Button onClick={onCommit} disabled={loading}>
+          {loading ? "در حال پردازش..." : "تایید"}
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

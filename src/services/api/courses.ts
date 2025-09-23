@@ -1,32 +1,59 @@
-import http from "../http";
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : '';
 
 export interface Course {
-  courseId: string;
+  code: string;
   title: string;
-  isActive?: boolean;
+  category?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export async function list() {
-  const res = await http.get("/courses");
-  return res.data as { items: Course[]; total: number };
+export interface CourseResponse {
+  items: Course[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
-export async function get(id: string) {
-  const res = await http.get(`/courses/${id}`);
-  return res.data as Course;
-}
+export const courseApi = {
+  async getAll(params?: {
+    q?: string;
+    page?: number;
+    pageSize?: number;
+    sort?: string;
+  }): Promise<CourseResponse> {
+    const response = await axios.get(`${API_BASE_URL}/api/courses`, { params });
+    return response.data;
+  },
 
-export async function create(data: Course) {
-  const res = await http.post("/courses", data);
-  return res.data as Course;
-}
+  async getById(code: string): Promise<Course> {
+    const response = await axios.get(`${API_BASE_URL}/api/courses/${code}`);
+    return response.data;
+  },
 
-export async function update(id: string, data: Course) {
-  const res = await http.put(`/courses/${id}`, data);
-  return res.data as Course;
-}
+  async create(data: Omit<Course, 'createdAt' | 'updatedAt'>): Promise<Course> {
+    const response = await axios.post(`${API_BASE_URL}/api/courses`, data);
+    return response.data;
+  },
 
-export async function remove(id: string) {
-  const res = await http.delete(`/courses/${id}`);
-  return res.data as Course;
-}
+  async update(code: string, data: Partial<Course>): Promise<Course> {
+    const response = await axios.put(`${API_BASE_URL}/api/courses/${code}`, data);
+    return response.data;
+  },
+
+  async patch(code: string, data: Partial<Course>): Promise<Course> {
+    const response = await axios.patch(`${API_BASE_URL}/api/courses/${code}`, data);
+    return response.data;
+  },
+
+  async delete(code: string): Promise<void> {
+    await axios.delete(`${API_BASE_URL}/api/courses/${code}`);
+  },
+
+  async bulkCreate(data: Omit<Course, 'createdAt' | 'updatedAt'>[]): Promise<{ count: number }> {
+    const response = await axios.post(`${API_BASE_URL}/api/courses/bulk`, data);
+    return response.data;
+  }
+};

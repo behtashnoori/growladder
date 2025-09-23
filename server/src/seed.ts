@@ -3,70 +3,63 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.employee.createMany({
+  await prisma.personnel.createMany({
     data: [
       {
-        id: "emp1",
-        fullName: "علی رضایی",
-        rank: "کارشناس",
-        hireDate: new Date("2021-01-01"),
-        positionStartDate: new Date("2022-01-01"),
+        emp_code: "emp1",
+        name: "علی رضایی",
+        job_title: "کارشناس",
+        department_name: "IT",
       },
       {
-        id: "emp2",
-        fullName: "مریم احمدی",
-        rank: "رئیس",
-        hireDate: new Date("2020-06-15"),
-        positionStartDate: new Date("2021-07-01"),
+        emp_code: "emp2",
+        name: "مریم احمدی",
+        job_title: "رئیس",
+        department_name: "HR",
       },
     ],
   });
 
   await prisma.course.createMany({
     data: [
-      { courseId: "course1", title: "مدیریت زمان" },
-      { courseId: "course2", title: "اصول رهبری" },
+      { code: "course1", title: "مدیریت زمان", category: "عمومی" },
+      { code: "course2", title: "اصول رهبری", category: "مدیریتی" },
     ],
   });
 
-  await prisma.jobRequirement.createMany({
+  await prisma.jobCourseReq.createMany({
     data: [
       {
-        id: "jr1",
-        unitId: "unit1",
-        jobTitle: "کارشناس آموزش",
-        courseId: "course1",
-        type: "الزامی",
-        priority: "بالا",
+        job_title_id: "job1",
+        course_code: "course1",
+        required: 1,
       },
       {
-        id: "jr2",
-        unitId: "unit2",
-        jobTitle: "مدیر پروژه",
-        courseId: "course2",
-        type: "اختیاری",
-        priority: "متوسط",
+        job_title_id: "job2",
+        course_code: "course2",
+        required: 1,
       },
     ],
   });
 
-  await prisma.training.createMany({
+  await prisma.personCourse.createMany({
     data: [
       {
-        id: "tr1",
-        employeeId: "emp1",
-        courseId: "course1",
+        emp_code: "emp1",
+        course_code: "course1",
         attendancePercent: 90,
-        date: new Date("2023-03-01"),
-        status: "قبول",
+        hours: 16,
+        status: "passed",
+        from: "2023-03-01",
+        to: "2023-03-15",
       },
       {
-        id: "tr2",
-        employeeId: "emp2",
-        courseId: "course2",
+        emp_code: "emp2",
+        course_code: "course2",
         attendancePercent: 75,
-        date: new Date("2023-04-15"),
-        status: "در حال برگزاری",
+        hours: 20,
+        status: "in_progress",
+        from: "2023-04-15",
       },
     ],
   });

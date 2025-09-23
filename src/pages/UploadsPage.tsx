@@ -4,6 +4,7 @@ import { downloadTemplateCourses } from "@/lib/xlsx";
 import {
   downloadTemplatePersonnel,
   downloadTemplatePosts,
+  downloadTemplatePostRanks,
   downloadTemplateSections,
   downloadTemplateDepartments,
   downloadTemplateManagements,
@@ -25,6 +26,11 @@ const items = [
     label: "پست‌ها",
     to: "/uploads/posts",
     template: (t: "xlsx" | "csv") => downloadTemplatePosts(t),
+  },
+  {
+    label: "رده پست‌ها",
+    to: "/uploads/post-ranks",
+    template: (t: "xlsx" | "csv") => downloadTemplatePostRanks(t),
   },
   {
     label: "بخش‌ها",
