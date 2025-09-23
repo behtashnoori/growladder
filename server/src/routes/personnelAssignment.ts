@@ -25,10 +25,10 @@ router.get("/", async (req, res, next) => {
       include: {
         orgHistory: {
           where: {
-            to: null, // Current assignment
+            is_current: true, // Current assignment
           },
           orderBy: {
-            from: 'desc'
+            from_date: 'desc'
           },
           take: 1
         }
@@ -119,10 +119,11 @@ router.post("/assign", validate(assignPersonnelSchema), async (req, res, next) =
     await prisma.personOrgHistory.updateMany({
       where: {
         emp_code,
-        to: null
+        is_current: true
       },
       data: {
-        to: from_date // End current assignment
+        is_current: false,
+        to_date: new Date(from_date)
       }
     });
 
@@ -156,8 +157,9 @@ router.post("/assign", validate(assignPersonnelSchema), async (req, res, next) =
         post_code: post?.code,
         post_title: post?.title,
         affiliation,
-        from: from_date,
-        to: to_date
+        from_date: new Date(from_date),
+        to_date: to_date ? new Date(to_date) : null,
+        is_current: !to_date
       }
     });
 
@@ -193,7 +195,7 @@ router.get("/history/:emp_code", async (req, res, next) => {
     const history = await prisma.personOrgHistory.findMany({
       where: { emp_code },
       orderBy: {
-        from: 'desc'
+        from_date: 'desc'
       }
     });
 

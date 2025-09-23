@@ -14,9 +14,15 @@ const querySchema = z.object({
   department_id: z.string().optional(),
 });
 
+const dateString = z.union([
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  z.string().datetime(),
+]);
+
 const bodySchema = z.object({
   emp_code: z.string(),
   name: z.string(),
+  employment_date: dateString.optional(),
   job_title_id: z.string().optional(),
   job_title: z.string().optional(),
   department_id: z.string().optional(),

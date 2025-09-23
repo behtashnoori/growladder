@@ -13,6 +13,7 @@ import departments from "./departments.js";
 import managements from "./managements.js";
 import orgStructure from "./orgStructure.js";
 import personnelAssignment from "./personnelAssignment.js";
+import positionHistory from "./positionHistory.js";
 
 const router = Router();
 
@@ -34,5 +35,6 @@ router.use("/api/departments", departments);
 router.use("/api/managements", managements);
 router.use("/api/org-structure", orgStructure);
 router.use("/api/personnel-assignment", personnelAssignment);
+router.use("/api/position-history", positionHistory);
 
 export default router;

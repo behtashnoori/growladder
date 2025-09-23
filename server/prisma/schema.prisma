@@ -11,6 +11,7 @@ generator client {
 model Personnel {
   emp_code           String   @id
   name               String
+  employment_date    DateTime? // تاریخ استخدام
   job_title_id       String?
   job_title          String?
   department_id      String?
@@ -33,6 +34,7 @@ model Personnel {
   orgHistory         PersonOrgHistory[]
 
   @@index([name, job_title_id])
+  @@index([employment_date])
 }
 
 // Course model
@@ -183,8 +185,9 @@ model PersonOrgHistory {
   management_code    String?
   management_title   String?
   affiliation        String?
-  from               String
-  to                 String?
+  from_date          DateTime // تاریخ شروع پست
+  to_date            DateTime? // تاریخ پایان پست
+  is_current         Boolean  @default(true) // آیا پست فعلی است
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   
@@ -192,6 +195,7 @@ model PersonOrgHistory {
   personnel          Personnel @relation(fields: [emp_code], references: [emp_code], onDelete: Cascade)
 
   @@index([emp_code])
-  @@index([from])
+  @@index([from_date])
+  @@index([is_current])
 }
 

@@ -6,11 +6,13 @@ import EmptyState from "@/components/EmptyState";
 import { personnelApi, Personnel } from "@/services/api/personnel";
 import PersonnelAssignmentModal from "@/components/personnel/PersonnelAssignmentModal";
 import { personnelAssignmentApi, PersonnelWithAssignment } from "@/services/api/personnelAssignment";
-import { Users, Building } from "lucide-react";
+import PositionHistoryDialog from "@/components/PositionHistoryDialog";
+import { Users, Building, History } from "lucide-react";
 
 const PersonnelPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedPersonnel, setSelectedPersonnel] = useState<PersonnelWithAssignment | null>(null);
 
   const query = useQuery({
@@ -44,9 +46,20 @@ const PersonnelPage = () => {
     setShowAssignmentModal(true);
   };
 
+  const handleViewHistory = (personnel: PersonnelWithAssignment) => {
+    setSelectedPersonnel(personnel);
+    setShowHistoryModal(true);
+  };
+
   const columns: Column<PersonnelWithAssignment>[] = [
     { key: "emp_code", title: "کد پرسنلی" },
     { key: "name", title: "نام" },
+    { 
+      key: "employment_date", 
+      title: "تاریخ استخدام",
+      render: (row: PersonnelWithAssignment) => 
+        row.employment_date ? new Date(row.employment_date).toLocaleDateString('fa-IR') : "-"
+    },
     { 
       key: "management_title", 
       title: "مدیریت",
@@ -71,15 +84,26 @@ const PersonnelPage = () => {
       key: "actions",
       title: "عملیات",
       render: (row: PersonnelWithAssignment) => (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => handleAssignPersonnel(row)}
-          className="flex items-center gap-2"
-        >
-          <Building className="h-4 w-4" />
-          تخصیص
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleAssignPersonnel(row)}
+            className="flex items-center gap-2"
+          >
+            <Building className="h-4 w-4" />
+            تخصیص
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleViewHistory(row)}
+            className="flex items-center gap-2"
+          >
+            <History className="h-4 w-4" />
+            سابقه
+          </Button>
+        </div>
       )
     }
   ];
@@ -118,6 +142,19 @@ const PersonnelPage = () => {
           onSave={() => {
             query.refetch();
           }}
+        />
+      )}
+
+      {/* Position History Modal */}
+      {showHistoryModal && selectedPersonnel && (
+        <PositionHistoryDialog
+          open={showHistoryModal}
+          onClose={() => {
+            setShowHistoryModal(false);
+            setSelectedPersonnel(null);
+          }}
+          emp_code={selectedPersonnel.emp_code}
+          personnelName={selectedPersonnel.name}
         />
       )}
 

@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL
 export interface PersonnelWithAssignment {
   emp_code: string;
   name: string;
+  employment_date?: string; // تاریخ استخدام
   job_title_id?: string;
   job_title?: string;
   department_id?: string;
@@ -27,6 +28,8 @@ export interface PersonOrgHistory {
   emp_code: string;
   post_code?: string;
   post_title?: string;
+  post_rank_code?: string;
+  post_rank_title?: string;
   section_code?: string;
   section_title?: string;
   department_code?: string;
@@ -34,8 +37,9 @@ export interface PersonOrgHistory {
   management_code?: string;
   management_title?: string;
   affiliation?: string;
-  from: string;
-  to?: string;
+  from_date: string;
+  to_date?: string;
+  is_current: boolean;
   createdAt: string;
   updatedAt: string;
 }

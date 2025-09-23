@@ -11,6 +11,7 @@ const COMMON: AliasMap = {
 export const PERSONNEL_HEADERS: AliasMap = {
   emp_code: ["emp_code", "کد پرسنلی", "PersonnelCode"],
   name: ["name", "نام", "نام و نام خانوادگی"],
+  employment_date: ["employment_date", "تاریخ استخدام", "تاریخ_استخدام", "تاریخ استخدام", "تاریخ استخدام", "تاریخ استخدام"],
 };
 
 export const MASTER_HEADERS: AliasMap = {

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { personnelAssignmentApi, PersonnelWithAssignment, OrgUnit, Post, AssignPersonnelRequest } from '@/services/api/personnelAssignment';
 import { postRankApi } from '@/services/api/postRanks';
+import { positionHistoryApi } from '@/services/api/positionHistory';
 
 interface PersonnelAssignmentModalProps {
   personnel: PersonnelWithAssignment;
@@ -31,6 +32,9 @@ const PersonnelAssignmentModal = ({
   const [postRanks, setPostRanks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // تشخیص نوع تخصیص
+  const isInitialAssignment = personnel.orgHistory.length === 0;
   
   // Form state
   const [selectedManagement, setSelectedManagement] = useState<string>('');
@@ -71,12 +75,13 @@ const PersonnelAssignmentModal = ({
           setSelectedSection(currentAssignment.section_code || '');
           setSelectedPost(currentAssignment.post_code || '');
           setSelectedPostRank(currentAssignment.post_rank_code || '');
-          setFromDate(currentAssignment.from);
-          setToDate(currentAssignment.to || '');
+          setFromDate(currentAssignment.from_date.split('T')[0]);
+          setToDate(currentAssignment.to_date ? currentAssignment.to_date.split('T')[0] : '');
           setAffiliation(currentAssignment.affiliation || '');
         } else {
-          // Set default from date to today
+          // تخصیص اولیه: تاریخ شروع = تاریخ امروز، تاریخ پایان = خالی
           setFromDate(new Date().toISOString().split('T')[0]);
+          setToDate('');
         }
         
       } catch (error) {
@@ -149,23 +154,77 @@ const PersonnelAssignmentModal = ({
     try {
       setSaving(true);
       
-      const assignmentData: AssignPersonnelRequest = {
-        emp_code: personnel.emp_code,
-        management_id: selectedManagement || undefined,
-        department_id: selectedDepartment || undefined,
-        section_id: selectedSection || undefined,
-        post_id: selectedPost || undefined,
-        from_date: fromDate,
-        to_date: toDate || undefined,
-        affiliation: affiliation || undefined,
-      };
+      // Get the selected organizational unit details
+      const selectedManagementData = organizationalStructure?.managements.find(m => m.id === selectedManagement);
+      const selectedDepartmentData = availableDepartments.find(d => d.id === selectedDepartment);
+      const selectedSectionData = availableSections.find(s => s.id === selectedSection);
+      const selectedPostData = posts.find(p => p.code === selectedPost);
+      const selectedPostRankData = postRanks.find(pr => pr.code === selectedPostRank);
 
-      await personnelAssignmentApi.assignPersonnel(assignmentData);
-      
-      toast({
-        title: "✅ تخصیص انجام شد",
-        description: `پرسنل ${personnel.name} با موفقیت تخصیص داده شد`,
-      });
+      if (isInitialAssignment) {
+        // تخصیص اولیه: فقط یک سابقه جدید ایجاد می‌کنیم
+        const positionHistoryData = {
+          emp_code: personnel.emp_code,
+          post_code: selectedPost,
+          post_title: selectedPostData?.title,
+          post_rank_code: selectedPostRank,
+          post_rank_title: selectedPostRankData?.title,
+          section_code: selectedSection,
+          section_title: selectedSectionData?.name,
+          department_code: selectedDepartment,
+          department_title: selectedDepartmentData?.name,
+          management_code: selectedManagement,
+          management_title: selectedManagementData?.name,
+          affiliation: affiliation || undefined,
+          from_date: fromDate,
+          to_date: toDate || undefined,
+          is_current: !toDate, // If no end date, it's current position
+        };
+
+        await positionHistoryApi.create(positionHistoryData);
+        
+        toast({
+          title: "✅ تخصیص اولیه انجام شد",
+          description: `پرسنل ${personnel.name} برای اولین بار تخصیص داده شد`,
+        });
+      } else {
+        // تغییر پست: پست قبلی را ببندیم و پست جدید را باز کنیم
+        const currentPosition = personnel.orgHistory[0];
+        
+        // بستن پست فعلی
+        if (currentPosition) {
+          await positionHistoryApi.update(currentPosition.id, {
+            to_date: new Date().toISOString(),
+            is_current: false
+          });
+        }
+        
+        // باز کردن پست جدید
+        const newPositionData = {
+          emp_code: personnel.emp_code,
+          post_code: selectedPost,
+          post_title: selectedPostData?.title,
+          post_rank_code: selectedPostRank,
+          post_rank_title: selectedPostRankData?.title,
+          section_code: selectedSection,
+          section_title: selectedSectionData?.name,
+          department_code: selectedDepartment,
+          department_title: selectedDepartmentData?.name,
+          management_code: selectedManagement,
+          management_title: selectedManagementData?.name,
+          affiliation: affiliation || undefined,
+          from_date: new Date().toISOString(), // تاریخ شروع = امروز
+          to_date: undefined,
+          is_current: true
+        };
+
+        await positionHistoryApi.create(newPositionData);
+        
+        toast({
+          title: "✅ تغییر پست انجام شد",
+          description: `پرسنل ${personnel.name} به پست جدید منتقل شد`,
+        });
+      }
       
       onSave();
       onClose();
@@ -205,11 +264,20 @@ const PersonnelAssignmentModal = ({
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">
-                تخصیص پرسنل
+                {isInitialAssignment ? "تخصیص اولیه پرسنل" : "تغییر پست پرسنل"}
               </h2>
               <p className="text-sm text-gray-600">
                 {personnel.name} - کد پرسنلی: {personnel.emp_code}
               </p>
+              {isInitialAssignment ? (
+                <p className="text-xs text-blue-600 mt-1">
+                  این اولین تخصیص پرسنل است
+                </p>
+              ) : (
+                <p className="text-xs text-orange-600 mt-1">
+                  پست فعلی بسته شده و پست جدید باز می‌شود
+                </p>
+              )}
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -338,25 +406,41 @@ const PersonnelAssignmentModal = ({
               <CardContent className="space-y-4">
                 {/* From Date */}
                 <div>
-                  <Label htmlFor="fromDate">تاریخ شروع *</Label>
+                  <Label htmlFor="fromDate">
+                    {isInitialAssignment ? "تاریخ شروع پست *" : "تاریخ شروع پست جدید *"}
+                  </Label>
                   <Input
                     id="fromDate"
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
                     required
+                    disabled={!isInitialAssignment} // در تغییر پست، تاریخ ثابت است
                   />
+                  {!isInitialAssignment && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      تاریخ شروع خودکار به امروز تنظیم می‌شود
+                    </p>
+                  )}
                 </div>
 
                 {/* To Date */}
                 <div>
-                  <Label htmlFor="toDate">تاریخ پایان</Label>
+                  <Label htmlFor="toDate">
+                    {isInitialAssignment ? "تاریخ پایان پست" : "تاریخ پایان پست قبلی"}
+                  </Label>
                   <Input
                     id="toDate"
                     type="date"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
+                    disabled={!isInitialAssignment} // در تغییر پست، تاریخ پایان ثابت است
                   />
+                  {!isInitialAssignment && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      تاریخ پایان پست قبلی خودکار به امروز تنظیم می‌شود
+                    </p>
+                  )}
                 </div>
 
                 {/* Affiliation */}
@@ -387,9 +471,12 @@ const PersonnelAssignmentModal = ({
                       {personnel.orgHistory[0].post_title && (
                         <div>پست: {personnel.orgHistory[0].post_title}</div>
                       )}
-                      <div>از: {personnel.orgHistory[0].from}</div>
-                      {personnel.orgHistory[0].to && (
-                        <div>تا: {personnel.orgHistory[0].to}</div>
+                      {personnel.orgHistory[0].post_rank_title && (
+                        <div>رده پست: {personnel.orgHistory[0].post_rank_title}</div>
+                      )}
+                      <div>از: {new Date(personnel.orgHistory[0].from_date).toLocaleDateString('fa-IR')}</div>
+                      {personnel.orgHistory[0].to_date && (
+                        <div>تا: {new Date(personnel.orgHistory[0].to_date).toLocaleDateString('fa-IR')}</div>
                       )}
                     </div>
                   </div>
@@ -417,7 +504,7 @@ const PersonnelAssignmentModal = ({
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  ذخیره تخصیص
+                  {isInitialAssignment ? "تخصیص اولیه" : "تغییر پست"}
                 </>
               )}
             </Button>

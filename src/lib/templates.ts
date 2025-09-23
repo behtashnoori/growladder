@@ -20,9 +20,9 @@ function download(rows: Record<string, unknown>[], name: string, type: "xlsx" | 
 
 export function downloadTemplatePersonnel(type: "xlsx" | "csv") {
   const rows = [
-    { emp_code: "123", name: "نمونه" },
-    { emp_code: "456", name: "نمونه دوم" },
-    { emp_code: "789", name: "" },
+    { emp_code: "123", name: "نمونه", employment_date: "2020-01-15" },
+    { emp_code: "456", name: "نمونه دوم", employment_date: "2019-03-20" },
+    { emp_code: "789", name: "", employment_date: "" },
   ];
   download(rows, "personnel_template", type);
 }

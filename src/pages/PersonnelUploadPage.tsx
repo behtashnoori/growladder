@@ -44,6 +44,7 @@ const PersonnelUploadPage = () => {
       const obj: PersonnelRowType = {
         emp_code: normalized.emp_code ?? "",
         name: normalized.name ?? "",
+        employment_date: normalized.employment_date ?? "",
       };
       const parsed = PersonnelRow.safeParse(obj);
       if (!parsed.success) {

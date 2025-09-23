@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL
 export interface Personnel {
   emp_code: string;
   name: string;
+  employment_date?: string; // تاریخ استخدام
   job_title_id?: string;
   job_title?: string;
   department_id?: string;
